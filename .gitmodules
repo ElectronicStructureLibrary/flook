@@ -1,0 +1,3 @@
+[submodule "aotus"]
+	path = aotus
+	url = git@github.com:zerothi/aotus.git
