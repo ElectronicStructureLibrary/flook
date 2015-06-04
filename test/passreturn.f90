@@ -224,9 +224,9 @@ contains
     ! Within this table we pass the xa value
     call tbl%open('xa')
     call tbl%get(xa)
-    call tbl%close_open('fa')
-    call tbl%get(fa)
-
+    call tbl%close()
+    call tbl%get('fa',fa)
+    ! Ensure the entire table has been closed
     call tbl%close(.true.)
 
     ! we have no return values

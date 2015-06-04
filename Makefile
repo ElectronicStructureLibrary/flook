@@ -30,7 +30,7 @@ test: lib
 .PHONY: clean
 clean:
 	(cd aotus ; rm -f arch.make)
-	-rm -rf doc/htlm doc/latex
+	-rm -rf docs/html docs/latex
 	-$(MAKE) -C aotus "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C src "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C test "ARCH_MAKE=$(ARCH_MAKE)" clean

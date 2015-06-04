@@ -91,6 +91,10 @@ module fluaput
      procedure, pass :: state_tbl_
      generic :: tbl => state_tbl_
 
+     ! Interface for retrieving stuff from the stack
+     procedure, pass :: get_tbl_
+     generic :: get => get_tbl_
+
   end type luaState
   public :: luaState
 
@@ -168,10 +172,15 @@ module fluaput
      generic :: create => tbl_create_str_, tbl_create_int_, &
           tbl_create_
 
+     procedure, pass :: set_s_
      procedure, pass :: set_b_0d_, set_b_1d_, set_b_2d_
      procedure, pass :: set_i_0d_, set_i_1d_, set_i_2d_
      procedure, pass :: set_s_0d_, set_s_1d_, set_s_2d_
      procedure, pass :: set_d_0d_, set_d_1d_, set_d_2d_
+     procedure, pass :: open_set_b_1d_, open_set_b_2d_
+     procedure, pass :: open_set_i_1d_, open_set_i_2d_
+     procedure, pass :: open_set_s_1d_, open_set_s_2d_
+     procedure, pass :: open_set_d_1d_, open_set_d_2d_
 
   !> Stores values in @lua tables.
   !!
@@ -194,15 +203,21 @@ module fluaput
   !! \param[inout] state A @lua state
   !! \param NOT-INP See the above explanation for details.
   !! \param[in] val The array to be stored, either 1D or 2D
-     generic :: set => set_b_0d_, set_b_1d_, set_b_2d_, &
-          set_i_0d_, set_i_1d_, set_i_2d_, &
-          set_s_0d_, set_s_1d_, set_s_2d_, &
-          set_d_0d_, set_d_1d_, set_d_2d_
+     generic :: set => set_s_, &
+          set_b_0d_, set_b_1d_, set_b_2d_, set_i_0d_, set_i_1d_, set_i_2d_, &
+          set_s_0d_, set_s_1d_, set_s_2d_, set_d_0d_, set_d_1d_, set_d_2d_, &
+          open_set_b_1d_, open_set_b_2d_, open_set_i_1d_, open_set_i_2d_, &
+          open_set_s_1d_, open_set_s_2d_, open_set_d_1d_, open_set_d_2d_
 
+     procedure, pass :: get_s_
      procedure, pass :: get_b_0d_, get_b_1d_, get_b_2d_
      procedure, pass :: get_i_0d_, get_i_1d_, get_i_2d_
      procedure, pass :: get_s_0d_, get_s_1d_, get_s_2d_
      procedure, pass :: get_d_0d_, get_d_1d_, get_d_2d_
+     procedure, pass :: open_get_b_1d_, open_get_b_2d_
+     procedure, pass :: open_get_i_1d_, open_get_i_2d_
+     procedure, pass :: open_get_s_1d_, open_get_s_2d_
+     procedure, pass :: open_get_d_1d_, open_get_d_2d_
 
   !> Retrieves values from @lua tables.
   !!
@@ -217,10 +232,11 @@ module fluaput
   !! \param[inout] state A @lua state
   !! \param[in] handle A table handle
   !! \param[out] val The array to be retrieved
-     generic :: get => get_b_0d_, get_b_1d_, get_b_2d_, &
-          get_i_0d_, get_i_1d_, get_i_2d_, &
-          get_s_0d_, get_s_1d_, get_s_2d_, &
-          get_d_0d_, get_d_1d_, get_d_2d_
+     generic :: get => get_s_, & 
+          get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_, &
+          get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_, &
+          open_get_b_1d_, open_get_b_2d_, open_get_i_1d_, open_get_i_2d_, &
+          open_get_s_1d_, open_get_s_2d_, open_get_d_1d_, open_get_d_2d_
 
   end type luaTbl
   public :: luaTbl
@@ -368,6 +384,16 @@ contains
     call tbl%open(name)
     
   end function state_tbl_
+
+  !> Retrives a table from the top of the stack.
+  !!
+  !! It 
+  function get_tbl_(lua) result(tbl)
+    class(luaState), intent(inout), target :: lua
+    type(luaTbl) :: tbl
+    tbl%lua => lua
+    tbl%h = aot_table_top(lua%L)
+  end function get_tbl_
 
   !> Creation of a new table within an existing table
   !!
@@ -588,6 +614,15 @@ contains
 
 #ifndef DOX_SKIP_THIS
 
+  ! get and set character
+  subroutine set_s_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    character(len=*), intent(inout) :: val
+    call aot_table_set_val(val,tbl%lua%L,thandle=tbl%h, key = name)
+  end subroutine set_s_
+
+
   !########   LOGICAL   ###############
   ! Documentation @ interface
   subroutine set_b_0d_(tbl,name,val)
@@ -610,6 +645,16 @@ contains
   end subroutine set_b_1d_
 
   ! Documentation @ interface
+  subroutine open_set_b_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(in) :: val(:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_b_1d_
+
+  ! Documentation @ interface
   subroutine set_b_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(in) :: val(:,:)
@@ -624,6 +669,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine set_b_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_b_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(in) :: val(:,:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_b_2d_
 
   !####### END LOGICAL   ###############
 
@@ -650,6 +705,16 @@ contains
   end subroutine set_i_1d_
 
   ! Documentation @ interface
+  subroutine open_set_i_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(in) :: val(:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_i_1d_
+
+  ! Documentation @ interface
   subroutine set_i_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     integer, intent(in) :: val(:,:)
@@ -664,6 +729,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine set_i_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_i_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(in) :: val(:,:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_i_2d_
 
   !####### END INTEGER   ###############
 
@@ -690,6 +765,16 @@ contains
   end subroutine set_s_1d_
 
   ! Documentation @ interface
+  subroutine open_set_s_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(in) :: val(:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_s_1d_
+
+  ! Documentation @ interface
   subroutine set_s_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     real(r4b), intent(in) :: val(:,:)
@@ -704,6 +789,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine set_s_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_s_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(in) :: val(:,:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_s_2d_
 
   !#######  END REAL     ###############
 
@@ -730,6 +825,16 @@ contains
   end subroutine set_d_1d_
 
   ! Documentation @ interface
+  subroutine open_set_d_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(in) :: val(:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_d_1d_
+
+  ! Documentation @ interface
   subroutine set_d_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     real(r8b), intent(in) :: val(:,:)
@@ -745,6 +850,16 @@ contains
     end do
   end subroutine set_d_2d_
 
+  ! Documentation @ interface
+  subroutine open_set_d_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(in) :: val(:,:)
+    call tbl%open(name)
+    call tbl%set(val)
+    call tbl%close()
+  end subroutine open_set_d_2d_
+
   !#######  END DOUBLE     ###############
 
 #endif
@@ -752,6 +867,16 @@ contains
 
 
 #ifndef DOX_SKIP_THIS
+
+  ! get and set character
+  subroutine get_s_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    character(len=*), intent(inout) :: val
+    integer :: err
+    call aot_table_get_val(val,err,tbl%lua%L,thandle=tbl%h, key = name)
+  end subroutine get_s_
+
 
   !########   LOGICAL   ###############
   ! Documentation @ interface
@@ -776,6 +901,16 @@ contains
   end subroutine get_b_1d_
 
   ! Documentation @ interface
+  subroutine open_get_b_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(inout) :: val(:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_b_1d_
+
+  ! Documentation @ interface
   subroutine get_b_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(inout) :: val(:,:)
@@ -790,6 +925,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine get_b_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_b_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(inout) :: val(:,:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_b_2d_
 
   !####### END LOGICAL   ###############
 
@@ -817,6 +962,16 @@ contains
   end subroutine get_i_1d_
 
   ! Documentation @ interface
+  subroutine open_get_i_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(inout) :: val(:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_i_1d_
+
+  ! Documentation @ interface
   subroutine get_i_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     integer, intent(inout) :: val(:,:)
@@ -831,6 +986,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine get_i_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_i_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(inout) :: val(:,:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_i_2d_
 
   !####### END INTEGER   ###############
 
@@ -858,6 +1023,16 @@ contains
   end subroutine get_s_1d_
 
   ! Documentation @ interface
+  subroutine open_get_s_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(inout) :: val(:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_s_1d_
+
+  ! Documentation @ interface
   subroutine get_s_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     real(r4b), intent(inout) :: val(:,:)
@@ -872,6 +1047,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine get_s_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_s_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(inout) :: val(:,:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_s_2d_
 
   !#######  END REAL     ###############
 
@@ -899,6 +1084,16 @@ contains
   end subroutine get_d_1d_
 
   ! Documentation @ interface
+  subroutine open_get_d_1d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(inout) :: val(:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_d_1d_
+
+  ! Documentation @ interface
   subroutine get_d_2d_(tbl,val)
     class(luaTbl), intent(inout) :: tbl
     real(r8b), intent(inout) :: val(:,:)
@@ -913,6 +1108,16 @@ contains
        call aot_table_close(tbl%lua%L,h)
     end do
   end subroutine get_d_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_d_2d_(tbl,name,val)
+    class(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(inout) :: val(:,:)
+    call tbl%open(name)
+    call tbl%get(val)
+    call tbl%close()
+  end subroutine open_get_d_2d_
 
   !#######  END DOUBLE     ###############
 
