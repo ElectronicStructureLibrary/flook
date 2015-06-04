@@ -83,7 +83,7 @@ geom = { &
 	 if #msg > 0 then print(msg .. " " .. v) end &
          print(self[v].unit) &
 	 for ia,xyz in pairs(self[v]) do &
-            if type(ia) == "table" then &
+            if type(xyz) == "table" then &
 	    a = "" &
 	    for _,x in pairs(xyz) do a = a .. " " .. x end &
 	    print(a) &
@@ -100,7 +100,7 @@ geom.__index = geom'
   character(255) :: err_string
   
   ! the lua embedded state
-  type(fl_state) :: L
+  type(luaState) :: lua
 
   ! Allocate arrays
   call aalloc(3)
@@ -109,25 +109,25 @@ geom.__index = geom'
   call print_a()
 
   ! Open new lua state.
-  call fl_state_init(L)
+  call lua%init()
 
   ! Register some fortran function to a lua function call
 
-  call fl_reg(L, "update_atoms", array_size_pass)
-  call fl_reg(L, "get_atom_info", array_pass)
-  call fl_reg(L, "return_atom_info", array_return)
+  call lua%reg("update_atoms", array_size_pass)
+  call lua%reg("get_atom_info", array_pass)
+  call lua%reg("return_atom_info", array_return)
 
   ! Add standard code to the parser
-  call fl_run(L, code = fortran_static_lua)
-  call fl_run(L, code = fortran_lua_crt_mat)
-  call fl_run(L, code = fortran_lua_geom)
+  call lua%run(code = fortran_static_lua)
+  call lua%run(code = fortran_lua_crt_mat)
+  call lua%run(code = fortran_lua_geom)
   ! Updated number of atoms and initialize the geometry
   ! to be ready to be parsed
-  call fl_run(L, code = 'geom.update_atoms() geom:init()')
+  call lua%run(code = 'geom.update_atoms() geom:init()')
 
-  call fl_run(L, 'passreturn.lua')
+  call lua%run('passreturn.lua')
 
-  call fl_state_quit(L)
+  call lua%close()
 
   print '(/,a)','LUA parsed'
   call print_a()
@@ -146,21 +146,19 @@ contains
     ! Define the in/out
     integer(c_int) :: npush
 
-    ! Local variables
-    integer :: geom
-
-    type(fl_state) :: L
+    type(luaState) :: lua
+    type(luaTbl) :: tbl
 
     ! Copy the c-pointer to the lua-state
-    L%flu_state = fl_ptr2state(state)
+    call lua%init(state)
 
     ! Open table named 
-    geom = fl_tbl(L,key = 'geom')
-    call fl_tbl_set(L,geom,'size', na_u)
-    ! Real passing
-    call fl_tbl_set(L,geom,'tmp', 1.5_8)
+    tbl = lua%tbl('geom')
 
-    call fl_tbl_close(L,geom)
+    call tbl%set('size', na_u)
+    call tbl%set('tmp', 1.5_8)
+
+    call tbl%close()
 
     npush = 0
 
@@ -178,22 +176,22 @@ contains
     ! Define the in/out
     integer(c_int) :: npush
 
-    ! Local variables
-    integer :: geom
-    type(fl_state) :: L
+    type(luaState) :: lua
+    type(luaTbl) :: tbl
+
     real(8) :: tmp
 
     ! Copy the c-pointer to the lua-state
-    L%flu_state = fl_ptr2state(state)
+    call lua%init(state)
 
     ! Open table named 
-    geom = fl_tbl(L, key = 'geom')
+    tbl = lua%tbl('geom.xa')
 
     ! Within this table we pass the xa value
-    call fl_tbl_set(L, geom, 'xa', xa)
-    call fl_tbl_set(L, geom, 'fa', fa)
-
-    call fl_tbl_close(L, geom)
+    call tbl%set(xa)
+    call tbl%close_open('fa')
+    call tbl%set(fa)
+    call tbl%close(.true.)
 
     ! we have no return values
     npush = 0
@@ -212,24 +210,24 @@ contains
     ! Define the in/out
     integer(c_int) :: npush
 
-    ! Local variables
-    integer :: geom
-    type(fl_state) :: L
+    type(luaState) :: lua
+    type(luaTbl) :: tbl
+
     real(8) :: tmp
 
     ! Copy the c-pointer to the lua-state
-    L%flu_State = fl_ptr2state(state)
+    call lua%init(state)
 
     ! Open table named 
-    geom = fl_tbl(L, key = 'geom')
+    tbl = lua%tbl('geom')
 
     ! Within this table we pass the xa value
-    call fl_tbl_get(L, geom, 'tmp', tmp)
-    print*,'tmp variable: ',tmp
-    call fl_tbl_get(L, geom, 'xa', xa)
-    call fl_tbl_get(L, geom, 'fa', fa)
+    call tbl%open('xa')
+    call tbl%get(xa)
+    call tbl%close_open('fa')
+    call tbl%get(fa)
 
-    call fl_tbl_close(L, geom)
+    call tbl%close(.true.)
 
     ! we have no return values
     npush = 0

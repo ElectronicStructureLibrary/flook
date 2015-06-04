@@ -81,7 +81,7 @@ geom = { &
 	 if #msg > 0 then print(msg .. " " .. v) end &
          print(self[v].unit) &
 	 for ia,xyz in pairs(self[v]) do &
-            if type(ia) == "table" then &
+            if type(xyz) == "table" then &
 	    a = "" &
 	    for _,x in pairs(xyz) do a = a .. " " .. x end &
 	    print(a) &

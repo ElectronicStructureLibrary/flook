@@ -1,4 +1,4 @@
-.SUFFIXES: .f90 .o .a
+.SUFFIXES: .f90 .F90 .o .a
 
 VPATH ?= $(shell pwd)
 

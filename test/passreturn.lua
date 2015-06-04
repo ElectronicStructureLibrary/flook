@@ -9,12 +9,10 @@
 print("Number of atoms retrieved: "..geom.size)
 
 -- Print values before fortran communication
---geom:print("Lua init")
+geom:print("Lua init")
 
 -- Call fortran retrieval of values
 get_atom_info()
-print("Real passed: "..geom.tmp)
-geom.tmp = 2.
 
 geom:print("Fortran passed")
 
