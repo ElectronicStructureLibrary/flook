@@ -69,8 +69,6 @@ Type `make` and possibly `make check` to run the tests in the [test](test/) dire
 
 ### Linking ###
 
-Now comes the most difficult part.
-
 flook consists intrinsically of 4 libraries:
 
 1. Lua library (`-llua`),
@@ -78,16 +76,43 @@ flook consists intrinsically of 4 libraries:
 3. basic fortran Lua interaction layer (`-laotus`), see [Thanks](#thanks),
 4. flook (`-lflook`).
 
+However, two variants of linking is available.
+
 Currently I do not have time to reduce these to fewer libraries but PRs are always appreciated!
+
+#### Compiling for one link ####
+
+flook can combine the libraries from 2. -- 4. into one library.
+
+To do this simply call make with this command
+
+    make onelib
+
+which creates `libflook.a` in the top directory. With this library
+you only need to link to your own Lua library.
+
+To link flook to your program you simply require
+
+    FLOOK_PATH  = /path/to/flook/parent
+    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
+    FLOOK_LIBS += -L/path/to/lua/lib -llua -ldl
+    FLOOK_INC   = -I$(FLOOK_PATH)/src
+
+For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
+for linking the program you need `$(FLOOK_LIBS)` on the command line.
+
+#### Direct linking ####
+
+When [one step](#compiling-for-one-link) does not work.
 
 In order to link properly to flook you can use this template (`Makefile`) for
 include statements and library linking (note that you should _not_ switch the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
-    FLOOK_LIBS += -L$(FLOOK_PATH)/src -lflook
+    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
     FLOOK_LIBS += -L$(FLOOK_PATH)/aotus/source -laotus
     FLOOK_LIBS += -L$(FLOOK_PATH)/aotus/LuaFortran -lflu
-    FLOOK_LIBS += -L/opt/generic/lua/5.3.0/lib -llua -ldl
+    FLOOK_LIBS += -L/path/to/lua/lib -llua -ldl
     FLOOK_INC   = -I$(FLOOK_PATH)/src
 
 For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
@@ -95,14 +120,14 @@ for linking the program you need `$(FLOOK_LIBS)` on the command line.
 
 ## Examples ##
 
-Several examples exists in the [test](test/) directory where one of the cases
-are shown in the following example:
+Several examples exists in the [test](test/) directory where one 
+is shown in the following example:
 
 @include exp_flook.f90
 
 The above program is a fortran program which communicates with an embedded Lua
 environment. It communicates with Lua 6 times and allows retrieval of elements
-and changing the elements.  
+and changing the elements at each communication point.  
 The communicating Lua code looks like this:
 
 @include exp_flook.lua
@@ -117,7 +142,6 @@ Second, I thank James Spencer for help regarding the [aotus] API.
 
 Third, I thank [ESL] for hosting a workshop for me to participate 
 and create the initial release.
-
 
 [flook@git]: https://github.com/ElectronicStructureLibrary/flook
 [aotus]: https://bitbucket.org/haraldkl/aotus
