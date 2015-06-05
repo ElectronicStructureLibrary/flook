@@ -51,7 +51,7 @@ module flook
   !!
   !! It provides several class procedures which enables 
   !! direct interaction with the @lua @env as well
-  !! as the creation of a @mod::luaTbl.
+  !! as the creation of a flook::luaTbl.
   !!
   !! All procedures related to this type are created
   !! with the object methodology in mind. Hence @f 2003 knowledge might
@@ -125,16 +125,16 @@ module flook
      !! Then, a new @lua @env will be created and will be made available
      !! to interact with @lua.
      !!
-     !! You cannot interact with @lua until you have called ``luaState%%init``.
+     !! You cannot interact with @lua until you have called `luaState%%init`.
      !! \param[in] ptr @opt pointer to C-state
-     generic :: init => state_init_, state_init_ptr_
+     generic, public :: init => state_init_, state_init_ptr_
 
      ! Close the @lua state
      !> @cond SHOW_PRIVATE
      !> @isee luaState::close or luaState::quit
      procedure, pass :: state_close_
      !> @isee luaState::close
-     generic :: quit => state_close_
+     generic, public :: quit => state_close_
      !> @endcond
 
      !> Closes the current @lua @env.
@@ -142,7 +142,7 @@ module flook
      !! Closes the @lua @env for processing. After a call to this
      !! you will have to initialize a new @lua instance before you can
      !! proceed.
-     generic :: close => state_close_
+     generic, public :: close => state_close_
 
      ! Register functions
      !> @cond SHOW_PRIVATE
@@ -182,7 +182,7 @@ module flook
      !! \param[in] name the exposed function name in @lua
      !! \param[in] func the @f function passed by pointer to be attached to 
      !!    the @lua @env by calling `name`
-     generic :: register => reg_func_
+     generic, public :: register => reg_func_
 
      ! Run specific code/files in the @lua state
      !> @cond SHOW_PRIVATE
@@ -246,7 +246,7 @@ module flook
      !!
      !! \param[in] file @opt executes a `dofile(file)` in @lua
      !! \param[in] code @opt executes `code` in @lua
-     generic :: run => state_run_
+     generic, public :: run => state_run_
 
      ! Interface for table creation
      ! If nothing is passed it returns
@@ -268,9 +268,9 @@ module flook
      !! Create a table in the main environment by names (creates a new table)
      !! or retrieve a table from the stack (via function calls).
      !!
-     !! The table name has the same format as luaTbl::open.
+     !! The table name has the same format as #open.
      !!
-     !! See @mod::luaTbl for specifications of the return value.
+     !! See #luaTbl for specifications of the return value.
      !!
      !! As an example:
      !! \code{.f90}
@@ -304,9 +304,9 @@ module flook
      !! \endcode
      !!
      !! \param[in] name @opt name of table to open, can be "." 
-     !! delimited as luaTbl::open
+     !!    delimited as luaTbl::open
      !! \return luaTbl the table object to post-process
-     generic :: table => state_tbl_, state_top_tbl_
+     generic, public :: table => state_tbl_, state_top_tbl_
 
   end type luaState
 
@@ -317,9 +317,41 @@ module flook
 
   public :: luaTbl
   ! Create a type to contain a table.
-  !> luaTbl
+  !> Handle for interacting with @lua tables.
   !! 
-  !! @lua handle for a table.
+  !! @lua handle for a tables.
+  !! 
+  !! This type is a list construct which keeps track of
+  !! the opened tree-structure in the @lua @env.
+  !!
+  !! One can open new tables on already tables to traverse
+  !! a complex table of high depth.
+  !! 
+  !! The main used feature is the #open construct
+  !! which opens a new table at the given point, which
+  !! could be a nested table.
+  !!
+  !! For example:
+  !! \code{.f90}
+  !! type(luaState) :: lua
+  !! type(luaTbl) :: tbl
+  !! integer :: lvls
+  !! tbl = lua%table('main')
+  !! ! now tbl is `main = {}`
+  !! call tbl%open('one.two')
+  !! ! now tbl is `two = {}` in `main.one`
+  !! ! i.e. tbl = `main.one.two`
+  !! lvls = 2
+  !! call tbl%close(lvls=lvls)
+  !! ! now tbl is `main` again
+  !! call tbl%close_open('main.one',lvls=lvls)
+  !! ! now tbl is `main.one` and `lvl = 2`.
+  !! call tbl%close_tree()
+  !! \endcode
+  !! Using this nested structure of the table construct
+  !! requires far fewer variables to control the @lua table
+  !! tree in @f code while providing a clean an efficient traversal
+  !! path.
   type :: luaTbl
 
      !> @cond SHOW_INSTANCE_VARIABLES
@@ -359,16 +391,16 @@ module flook
      !!
      !! This openening provides easy access to several
      !! nested tables using a "." notation.
-     !! Hence providing luaTbl::open::name with 
+     !! Hence providing `luaTbl%%open(name)` with 
      !! value `main.nested.nested` a table
      !! will be created with this equivalent @lua code:
      !! \code{.lua}
      !! main = { nested = { nested } } }
      !! \endcode
      !! 
-     !! By using the @opt keyword luaTbl::open::lvls
+     !! By using the @opt keyword `luaTbl%%open(lvls=lvls)`
      !! one can retrieve how many levels was opened
-     !! by luaTbl::open. This is handy when you want
+     !! by #open. This is handy when you want
      !! to close as many nested tables as you have just
      !! opened.
      !! Hence you can do:
@@ -379,13 +411,15 @@ module flook
      !! call luaTbl%close(lvls = lvls)
      !! \endcode
      !! __Note__ the initialization of `lvls = 0`, this 
-     !! is needed to as one can re-use the same operation
-     !! for nested operation of the table.
+     !! is needed so as to re-use the same operation
+     !! for nested operation of the table, i.e.:
      !! \code{.f90}
      !! lvls = 0
      !! call luaTbl%open("main.nested.nested",lvls = lvls)
+     !!
      !! ! do operations at this level
      !! call luaTbl%open("more.nested",lvls = lvls)
+     !!
      !! ! do more opeartions at this, deeper, level.
      !!
      !! ! Finally return to the level at `lvls = 0`
@@ -393,8 +427,8 @@ module flook
      !! \endcode
      !! 
      !! \param[in] name the table
-     !! \param[out] lvls @opt keep track of how many levels was actually opened
-     generic :: open => tbl_open_
+     !! \param[inout] lvls @opt keep track of how many levels was actually opened
+     generic, public :: open => tbl_open_
 
      !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_
@@ -405,55 +439,82 @@ module flook
      !! This closes an open table which disables it from
      !! interaction using the handle `handle`.
      !!
+     !! As the luaTbl class is a _following_ data structure a close 
+     !! will move the table handle to the parent table.
+     !!
+     !! Hence:
+     !! \code{.f90}
+     !! call luaTbl%open('main.nested.nested')
+     !! call luaTbl%close()
+     !! \endcode
+     !! will be retain the table handle at `main.nested`, where as
+     !! call `call luaTbl%close(tree = .true.)` will close all.
+     !!
+     !! One can supply an integer `lvls` to specify the number 
+     !! of levels that will be closed.
+     !! If this number exceeds the number of available nested tables
+     !! it will be equivalent to `tree = .true.`.
+     !!
      !! \param[in] tree @opt whether the entire table tree will be closed
-     !! \param[in] lvls @opt the number of levels that will be closed
-     generic :: close => tbl_close_
+     !! \param[inout] lvls @opt the number of levels that will be closed
+     generic, public :: close => tbl_close_
 
      !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_tree_
      !> @endcond
 
      !> Shorthand for `close(tree=.true.)`
-     generic :: close_tree => tbl_close_tree_
+     !!
+     !! @isee #close(tree=.true.)
+     generic, public :: close_tree => tbl_close_tree_
 
      !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_open_
      !> @endcond
 
-     generic :: close_open => tbl_close_open_
+     !> Closes a @lua table, then re-opens it using the provided table name.
+     !!
+     !! The following two codes are equivalent, without ambiguity:
+     !! \code{.f90}
+     !! call luaTbl%open('main.nested')
+     !! call luaTbl%close()
+     !! call luaTbl%open('nested_2')
+     !! \endcode
+     !! and
+     !! \code{.f90}
+     !! call luaTbl%open('main.nested')
+     !! call luaTbl%close_open('nested_2')
+     !! \endcode
+     !!
+     !! \param[in] name the table
+     !! \param[inout] lvls @opt keep track of how many levels was actually closed
+     !!     _and_ opened, works as the statement in #close and #open
+     !! For instance doing #close_open('main',lvls=lvls) with `lvls=2` will
+     !! return with `lvls=1`.
+     generic, public :: close_open => tbl_close_open_
 
      !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_create_str_, tbl_create_int_
      procedure, pass :: tbl_create_
      !> @endcond
 
-     !> Open/create a @lua table.
+     !> Open/create a @lua table from a @lua @env.
      !!
      !! Open or creates a @lua table to be post-processed in
      !! @f.
      !! 
-     !! This function returns a handle for a table within the 
-     !! `parent` table, or if the `parent` has not been passed
-     !! within the global scope.
+     !! This function returns a table handle #luaTbl to do 
+     !! operations within this table.
      !!
-     !! If you supply a `key` it will try and open the table
-     !! at that respective key. If the key already has a
+     !! If you supply a `name` it will open the table
+     !! at that respective name. If the name already has a
      !! table it will open that and interact with that table,
-     !! else it will create a new table and create the it in
-     !! the key.
+     !! else it will create a new table and create it in
+     !! the name. The table names abide to the rules in #open.
      !!
-     !! The key can either be a string or an integer
-     !! specifying an indexable position or hashable position of
-     !! the table.
-     !!
-     !! Note that the table handle is an integer and per-see only
-     !! has meaning for the @lua library.
-     !!
-     !! \param[inout] state A @lua state
-     !! \param[in] parent A parent table handle
-     !! \param[in] key The key which is queried
-     !! \return a table handle 
-     generic :: create => tbl_create_str_, tbl_create_int_, &
+     !! \param[in] name name of table, possibly "." separated
+     !! \return a table handle #luaTbl
+     generic, public :: create => tbl_create_str_, tbl_create_int_, &
           tbl_create_
 
      !> @cond SHOW_PRIVATE
@@ -477,7 +538,7 @@ module flook
      !!
      !! The @lua table passed can be expressed in two different
      !! methods:
-     !! - __name__ based, where an initial luaTbl::open
+     !! - __name__ based, where an initial #open
      !!   is called to create, or retrieve a table by key before
      !!   storing the array in that table.
      !!   
@@ -497,7 +558,7 @@ module flook
      !!     - `integer`
      !!     - `real(kind(0.))`
      !!     - `real(kind(0.d0))`
-     generic :: set => set_s_, &
+     generic, public :: set => set_s_, &
           set_b_0d_, set_b_1d_, set_b_2d_, set_i_0d_, set_i_1d_, set_i_2d_, &
           set_s_0d_, set_s_1d_, set_s_2d_, set_d_0d_, set_d_1d_, set_d_2d_, &
           open_set_b_1d_, open_set_b_2d_, open_set_i_1d_, open_set_i_2d_, &
@@ -524,7 +585,7 @@ module flook
      !!
      !! The @f variable/array passed can be expressed in two different
      !! methods:
-     !! - __name__ based, where an initial luaTbl::open
+     !! - __name__ based, where an initial #open
      !!   is retrieving the table by key before locating
      !!   array values from that table.
      !!   
@@ -534,8 +595,8 @@ module flook
      !!   directly stored. 
      !!
      !! \param[in] name @opt this constitutes the __name__ based method
-     !! \param[in] val the array to be retrieved, currently supported dimension and
-     !!     kinds are: scalars, and 1-2 D arrays.  
+     !! \param[in] val the array to be retrieved, currently supported 
+     !!     dimension and kinds are: scalars, and 1-2 D arrays.  
      !!     The current data types are:
      !!
      !!     - `character`, (no arrays of this data is allowed)
@@ -543,7 +604,7 @@ module flook
      !!     - `integer`
      !!     - `real(kind(0.))`
      !!     - `real(kind(0.d0))`
-     generic :: get => get_s_, get_s_i_, & 
+     generic, public :: get => get_s_, get_s_i_, & 
           get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_, &
           get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_, &
           open_get_b_1d_, open_get_b_2d_, open_get_i_1d_, open_get_i_2d_, &
@@ -734,18 +795,18 @@ contains
   recursive subroutine tbl_close_(tbl,tree,lvls)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(in), optional :: tree
-    integer, intent(in), optional :: lvls
+    integer, intent(inout), optional :: lvls
     logical :: ltree
     type(luaTbl), pointer :: p
-    integer :: h, llvls
+    integer :: h
     ! If the table is not open, do not do anything
     if ( tbl%h == LUA_TBL_UNDEFINED ) return
 
     ! Get options
-    llvls = 1
-    if ( present(lvls) ) llvls = lvls
-    ! Do an immediate catch of zero closures
-    if ( llvls == 0 ) return
+    if ( present(lvls) ) then
+       ! Do an immediate catch of zero closures
+       if ( lvls <= 0 ) return
+    end if
 
     ! Default to not close the entire tree
     ltree = .false.
@@ -767,10 +828,14 @@ contains
 
     ! Store the new table handle
     tbl%h = h
-    if ( ltree ) call tbl%close(.true.)
+    if ( present(lvls) ) lvls = lvls - 1
 
-    if ( .not. ltree .and. llvls > 1 ) then
-       call tbl%close(lvls = llvls - 1)
+    ! Figure out if we should continue close 
+    ! tables
+    if ( ltree ) then
+       call tbl%close(.true.)
+    else if ( present(lvls) ) then
+       call tbl%close(lvls = lvls)
     end if
 
   end subroutine tbl_close_
@@ -785,9 +850,9 @@ contains
   subroutine tbl_close_open_(tbl,name,lvls)
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in), optional :: lvls
+    integer, intent(inout), optional :: lvls
     call tbl%close(lvls=lvls)
-    call tbl%open(name)
+    call tbl%open(name,lvls=lvls)
   end subroutine tbl_close_open_
 
   !> Retrieves the number of elements in the currently opened table.
