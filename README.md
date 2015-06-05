@@ -1,4 +1,4 @@
-# flook [flook]
+# flook #
 
 The fortran-Lua-hook library.
 
@@ -12,7 +12,7 @@ Its main usage is the ability to change run-time variables at run-time
 in order to optimize, or even change, the execution path of the parent
 program.
 
-## Usage [Usage]
+## Usage ##
 
 Imagine you have a program which has 3 distinct places where interaction
 might occur:
@@ -24,12 +24,12 @@ might occur:
 	end program
 
 At each intermediate point one wishes to communicate with a scripting language.  
-[flook] lets you communicate fortran and Lua.
+flook lets you communicate fortran and Lua. For an elaborate example see [Examples](#examples).
 
-## Downloading and installation
+## Downloading and installation ##
 
-Installing [flook] requires you to first fetch the library which is currently
-hosted at Github [[flook]](https://github.com/ElectronicStructureLibrary/flook).
+Installing flook requires you to first fetch the library which is currently
+hosted at Github [flook@git].
 
 To fetch all required files do this
 
@@ -48,7 +48,7 @@ At this point you should see (_at least_) the following directories and files:
     drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 src
     drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 test
 
-To compile [flook] you need a minimal `arch.make` file.  
+To compile flook you need a minimal `arch.make` file.  
 The content of `arch.make`, which should be located in the top directory, can be this
 minimal content (please correct tabulators to conform to `Makefile` standards):
 
@@ -67,20 +67,20 @@ The `$(INC)` is needed for internal reasons, (sorry about the quick mock-up)...
 
 Type `make` and possibly `make check` to run the tests in the [test](test/) directory.
 
-### Linking
+### Linking ###
 
-Now comes the worst part...
+Now comes the most difficult part.
 
-[flook] consists intrinsically of 4 libraries:
+flook consists intrinsically of 4 libraries:
 
 1. Lua library (`-llua`),
-2. fortran to Lua interface (`-lflu`), see [Thanks],
-3. basic fortran Lua interaction layer (`-laotus`), see [Thanks],
-4. [flook] (`-lflook`).
+2. fortran to Lua interface (`-lflu`), see [Thanks](#thanks),
+3. basic fortran Lua interaction layer (`-laotus`), see [Thanks](#thanks),
+4. flook (`-lflook`).
 
 Currently I do not have time to reduce these to fewer libraries but PRs are always appreciated!
 
-In order to link properly to [flook] you can use this template (`Makefile`) for
+In order to link properly to flook you can use this template (`Makefile`) for
 include statements and library linking (note that you should _not_ switch the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
@@ -93,7 +93,7 @@ include statements and library linking (note that you should _not_ switch the or
 For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
 for linking the program you need `$(FLOOK_LIBS)` on the command line.
 
-## Examples [Examples]
+## Examples ##
 
 Several examples exists in the [test](test/) directory where one of the cases
 are shown in the following example:
@@ -102,21 +102,24 @@ are shown in the following example:
 
 The above program is a fortran program which communicates with an embedded Lua
 environment. It communicates with Lua 6 times and allows retrieval of elements
-and changing the elements.
+and changing the elements.  
 The communicating Lua code looks like this:
 
 @include exp_flook.lua
 
 
-### Thanks [Thanks]
+### Thanks ###
 
 First, I owe [Harald Klimach](https://bitbucket.org/haraldkl) a big thanks 
-for the creation of [aotus](https://bitbucket.org/haraldkl/aotus) for
-the Lua-Fortran embeddedment.
+for the creation of [aotus] for the Lua-Fortran embedment.
 
-Second, I thank James Spencer for help regarding
-the [aotus](https://bitbucket.org/haraldkl/aotus) API.
+Second, I thank James Spencer for help regarding the [aotus] API.
 
-Third, I thank [ESL-CECAM](http://esl.cecam.org/) for hosting a workshop for me to participate 
+Third, I thank [ESL] for hosting a workshop for me to participate 
 and create the initial release.
+
+
+[flook@git]: https://github.com/ElectronicStructureLibrary/flook
+[aotus]: https://bitbucket.org/haraldkl/aotus
+[ESL]: http://esl.cecam.org/
 
