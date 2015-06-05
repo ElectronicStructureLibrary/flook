@@ -1,4 +1,4 @@
-fluaput
+flook
 =======
 
 Library for defining input/output data through Lua interface.
