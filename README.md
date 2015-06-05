@@ -68,6 +68,7 @@ Type `make` and possibly `make check` to run the tests in the [test](test/) dire
 Now comes the worst part. 
 
 flook consists intrinsically of 4 libraries, 
+
 1. Lua library (`-llua`),
 2. fortran to Lua interface (`-lflu`), 
 3. basic fortran Lua interaction layer (`-laotus`),  
