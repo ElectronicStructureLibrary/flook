@@ -112,9 +112,9 @@ geom.__index = geom'
 
   ! Register some fortran function to a lua function call
 
-  call lua%reg("update_atoms", array_size_pass)
-  call lua%reg("get_atom_info", array_pass)
-  call lua%reg("return_atom_info", array_return)
+  call lua%register("update_atoms", array_size_pass)
+  call lua%register("get_atom_info", array_pass)
+  call lua%register("return_atom_info", array_return)
 
   ! Add standard code to the parser
   call lua%run(code = fortran_static_lua)
@@ -152,7 +152,7 @@ contains
     call lua%init(state)
 
     ! Open table named 
-    tbl = lua%tbl('geom')
+    tbl = lua%table('geom')
 
     call tbl%set('size', na_u)
     call tbl%set('tmp', 1.5_8)
@@ -184,7 +184,7 @@ contains
     call lua%init(state)
 
     ! Open table named 
-    tbl = lua%tbl('geom.xa')
+    tbl = lua%table('geom.xa')
 
     ! Within this table we pass the xa value
     call tbl%set(xa)
@@ -218,7 +218,7 @@ contains
     call lua%init(state)
 
     ! Open table named 
-    tbl = lua%tbl('geom')
+    tbl = lua%table('geom')
 
     ! Within this table we pass the xa value
     call tbl%open('xa')

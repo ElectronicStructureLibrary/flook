@@ -39,11 +39,16 @@ endif
 LIBS += -ldl
 
 .PHONY: all
-all: aot_passreturn passreturn
+all: aot_passreturn passreturn tbl
 
 
 .PHONY: passreturn
 passreturn: passreturn.o
+	$(FC) -o $@ $< $(FFLAGS) $(LIBS)
+	-./$@
+
+.PHONY: tbl
+tbl: tbl.o
 	$(FC) -o $@ $< $(FFLAGS) $(LIBS)
 	-./$@
 

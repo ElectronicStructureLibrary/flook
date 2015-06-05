@@ -39,6 +39,7 @@ module flook
   integer, parameter :: r4b = selected_real_kind(p=6) !< Internal precision
   integer, parameter :: r8b = selected_real_kind(p=15) !< Internal precision
 
+  public :: luaState
   ! Create information about the lua-state
   !> \fn luaState
   !! @lua handle for a current state
@@ -76,7 +77,7 @@ module flook
 
      ! Register functions
      procedure, pass :: reg_func_
-     generic :: reg => reg_func_
+     generic :: register => reg_func_
 
      ! Run specific code/files in the @lua state
      procedure, pass :: state_run_
@@ -88,21 +89,17 @@ module flook
      ! Or you can pass a key to grab the table
      ! associated with the key name in the current 
      ! scope.
-     procedure, pass :: state_tbl_
-     generic :: tbl => state_tbl_
-
      ! Interface for retrieving stuff from the stack
-     procedure, pass :: get_tbl_
-     generic :: get => get_tbl_
+     procedure, pass :: state_tbl_
+     procedure, pass :: state_top_tbl_
+     generic :: table => state_tbl_, state_top_tbl_
 
   end type luaState
-  public :: luaState
 
   ! Signals to the table that it hasn't been created yet
   integer, parameter :: LUA_TBL_UNDEFINED = -9999999
 
-  ! Data container for a li
-
+  public :: luaTbl
   ! Create a type to contain a table.
   !> \fn luaTbl
   !! 
@@ -209,7 +206,7 @@ module flook
           open_set_b_1d_, open_set_b_2d_, open_set_i_1d_, open_set_i_2d_, &
           open_set_s_1d_, open_set_s_2d_, open_set_d_1d_, open_set_d_2d_
 
-     procedure, pass :: get_s_
+     procedure, pass :: get_s_, get_s_i_
      procedure, pass :: get_b_0d_, get_b_1d_, get_b_2d_
      procedure, pass :: get_i_0d_, get_i_1d_, get_i_2d_
      procedure, pass :: get_s_0d_, get_s_1d_, get_s_2d_
@@ -232,14 +229,21 @@ module flook
   !! \param[inout] state A @lua state
   !! \param[in] handle A table handle
   !! \param[out] val The array to be retrieved
-     generic :: get => get_s_, & 
+     generic :: get => get_s_, get_s_i_, & 
           get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_, &
           get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_, &
           open_get_b_1d_, open_get_b_2d_, open_get_i_1d_, open_get_i_2d_, &
           open_get_s_1d_, open_get_s_2d_, open_get_d_1d_, open_get_d_2d_
 
   end type luaTbl
-  public :: luaTbl
+
+  !> Length of a table
+  !!
+  !! Retrieve the length of a table.
+  public :: len
+  interface len
+     module procedure tbl_len_
+  end interface len
 
   ! Internal interface to create tables easily
   interface tbl_create__
@@ -388,19 +392,21 @@ contains
   !> Retrives a table from the top of the stack.
   !!
   !! It 
-  function get_tbl_(lua) result(tbl)
+  function state_top_tbl_(lua) result(tbl)
     class(luaState), intent(inout), target :: lua
     type(luaTbl) :: tbl
     tbl%lua => lua
+    nullify(tbl%p)
     tbl%h = aot_table_top(lua%L)
-  end function get_tbl_
+  end function state_top_tbl_
 
   !> Creation of a new table within an existing table
   !!
   !!...
-  recursive subroutine tbl_open_(tbl,name)
+  recursive subroutine tbl_open_(tbl,name,lvls)
     class(luaTbl), intent(inout), target :: tbl
     character(len=*), intent(in) :: name
+    integer, intent(inout), optional :: lvls !< has to be zero by the user
 
     ! To create the traversal tree
     type(luaTbl), pointer :: tbl_new => null()
@@ -448,13 +454,25 @@ contains
        tbl%h = tbl_create__(tbl%lua, key = trim(tmp) )
     end if
 
+    ! Update count of levels that has been openened
+    if ( present(lvls) ) lvls = lvls + 1
+
     if ( idx_dot > 1 ) then
        ! Create remaining table
        tmp = adjustl(trim(name(idx_dot+1:)))
-       call tbl%open(trim(tmp))
+       call tbl%open(trim(tmp),lvls = lvls)
     end if
 
   end subroutine tbl_open_
+
+  !> Retrieves the number of elements in the table
+  !!
+  !! Retrieves the number of elements in the table.
+  function tbl_len_(tbl) result(len)
+    type(luaTbl), intent(in) :: tbl
+    integer :: len
+    len = aot_table_length(tbl%lua%L,tbl%h)
+  end function tbl_len_
 
   !> Closes a @lua table.
   !!
@@ -465,14 +483,22 @@ contains
   !!    The @lua handle where the table reference exist.
   !! \param[inout] handle
   !!    The table handle that is closed for input/output.
-  recursive subroutine tbl_close_(tbl,tree)
+  recursive subroutine tbl_close_(tbl,tree,lvls)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(in), optional :: tree
+    integer, intent(in), optional :: lvls
     logical :: ltree
     type(luaTbl), pointer :: p
-    integer :: h
+    integer :: h, llvls
     ! If the table is not open, do not do anything
     if ( tbl%h == LUA_TBL_UNDEFINED ) return
+
+    ! Get options
+    llvls = 1
+    if ( present(lvls) ) llvls = lvls
+    ! Do an immediate catch of zero closures
+    if ( llvls == 0 ) return
+
     ! Default to not close the entire tree
     ltree = .false.
     if ( present(tree) ) ltree = tree
@@ -494,6 +520,10 @@ contains
     ! Store the new table handle
     tbl%h = h
     if ( ltree ) call tbl%close(.true.)
+
+    if ( .not. ltree .and. llvls > 1 ) then
+       call tbl%close(lvls = llvls - 1)
+    end if
 
   end subroutine tbl_close_
 
@@ -876,6 +906,15 @@ contains
     integer :: err
     call aot_table_get_val(val,err,tbl%lua%L,thandle=tbl%h, key = name)
   end subroutine get_s_
+
+  ! get and set character
+  subroutine get_s_i_(tbl,idx,val)
+    class(luaTbl), intent(inout) :: tbl
+    integer, intent(in) :: idx
+    character(len=*), intent(inout) :: val
+    integer :: err
+    call aot_table_get_val(val,err,tbl%lua%L,thandle=tbl%h, pos = idx)
+  end subroutine get_s_i_
 
 
   !########   LOGICAL   ###############
