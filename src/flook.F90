@@ -126,6 +126,7 @@ module flook
      !! to interact with @lua.
      !!
      !! You cannot interact with @lua until you have called ``luaState%%init``.
+     !! \param[in] ptr @opt pointer to C-state
      generic :: init => state_init_, state_init_ptr_
 
      ! Close the @lua state
@@ -151,20 +152,19 @@ module flook
 
      !> Register @f functions to be called directly from @lua.
      !!
-     !!
      !! Allows registrering @f functions as callable functions in @lua.
      !! 
      !! Example:
      !! \code{.f90}
      !! function f(L_c) result(nret) bind(c)
      !!  type(c_ptr), value : L_c
-     !!  type(fl_state) :: L
-     !!  L = fl_ptr2state(L_c)
+     !!  type(luaState) :: lua
+     !!  call lua%init(L_c)
      !!     ! do operations
      !!  nret = 0
      !! end function
      !! subroutine register_fortran_funcs()
-     !!  call fl_reg(L,name='fortran_f',func=f)
+     !!  call lua%register('fortran_f',func=f)
      !! end subroutine
      !! \endcode
      !! Inside the @lua script you can then
@@ -179,10 +179,9 @@ module flook
      !! For instance, if you create a single table in the `f` function
      !! `nret = 1` and the @lua call had to be `tbl = fortran_f()`.
      !!
-     !! \param[in] lua A @lua state
-     !! \param[in] name The exposed function name in @lua
-     !! \param[in] func The @f function passed by pointer to be attached to 
-     !!    the @lua @env.
+     !! \param[in] name the exposed function name in @lua
+     !! \param[in] func the @f function passed by pointer to be attached to 
+     !!    the @lua @env by calling `name`
      generic :: register => reg_func_
 
      ! Run specific code/files in the @lua state
@@ -300,7 +299,7 @@ module flook
      !! main = {}
      !! main.nest_one = {}
      !! main.nest_one.nest_two = {}
-     !! -- Or in compact form:
+     !! -- The later table creation can be expressed in compact form:
      !! new = { nest_one = { nest_two = {} } }
      !! \endcode
      !!
@@ -478,18 +477,26 @@ module flook
      !!
      !! The @lua table passed can be expressed in two different
      !! methods:
-     !! - __parent__, __key__ based, where an initial #fl_tbl
+     !! - __name__ based, where an initial luaTbl::open
      !!   is called to create, or retrieve a table by key before
      !!   storing the array in that table.
      !!   
-     !!   __NOTE__: Currently this is only implemented using a character `key`.
-     !! - __handle__ based, an existing table has been created by the user
-     !!   and subsequent storage is directly in this table.
+     !!   __NOTE__: Currently this is only implemented using a character `key`, 
+     !!     hence you cannot use positional entries in this method.
+     !! - __direct__ based, the currently opened table has been created by 
+     !!   the user and subsequent storage is directly in this table.
      !!   This is handy if you want to assign other information subsequently.
      !!
-     !! \param[inout] state A @lua state
-     !! \param NOT-INP See the above explanation for details.
-     !! \param[in] val The array to be stored, either 1D or 2D
+     !! \param[in] name @opt this constitutes the __name__ based method
+     !! \param[in] val the array to be stored, currently supported dimension and
+     !!     kinds are: scalars, and 1-2 D arrays.  
+     !!     The current data types are:
+     !!
+     !!     - `character`, (no arrays of this data is allowed)
+     !!     - `logical`
+     !!     - `integer`
+     !!     - `real(kind(0.))`
+     !!     - `real(kind(0.d0))`
      generic :: set => set_s_, &
           set_b_0d_, set_b_1d_, set_b_2d_, set_i_0d_, set_i_1d_, set_i_2d_, &
           set_s_0d_, set_s_1d_, set_s_2d_, set_d_0d_, set_d_1d_, set_d_2d_, &
@@ -510,17 +517,32 @@ module flook
 
      !> Retrieves values from @lua tables.
      !!
-     !! Retrieves values from integer indexed @lua tables
-     !! by direct bounds searching in the @f array.
-     !! 
-     !! __Note__:
-     !! The @lua table _has_ to pre-exist __and__ all
-     !! indices within the bounds must exist in the
-     !! table.
+     !! Retrieves @lua tables, or entries, to @f arrays, or variables
+     !! direct indices and bounds.  
+     !! It will try and read in entries as provided by the 
+     !! @f array from the equivalent @lua table.
      !!
-     !! \param[inout] state A @lua state
-     !! \param[in] handle A table handle
-     !! \param[out] val The array to be retrieved
+     !! The @f variable/array passed can be expressed in two different
+     !! methods:
+     !! - __name__ based, where an initial luaTbl::open
+     !!   is retrieving the table by key before locating
+     !!   array values from that table.
+     !!   
+     !!   __NOTE__: Currently this is only implemented using a character `key`, 
+     !!     hence you cannot use positional entries in this method.
+     !! - __direct__ based, the currently opened table has the variable/array
+     !!   directly stored. 
+     !!
+     !! \param[in] name @opt this constitutes the __name__ based method
+     !! \param[in] val the array to be retrieved, currently supported dimension and
+     !!     kinds are: scalars, and 1-2 D arrays.  
+     !!     The current data types are:
+     !!
+     !!     - `character`, (no arrays of this data is allowed)
+     !!     - `logical`
+     !!     - `integer`
+     !!     - `real(kind(0.))`
+     !!     - `real(kind(0.d0))`
      generic :: get => get_s_, get_s_i_, & 
           get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_, &
           get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_, &
@@ -529,10 +551,13 @@ module flook
 
   end type luaTbl
 
+  public :: len
   !> Length of a table
   !!
   !! Retrieve the length of a table.
-  public :: len
+  !! \param[in] luaTbl table to retrieve the length of
+  !! \return integer the number of elements in the table, note that
+  !!     _hidden_ entries are also counted, i.e. `metatable`s etc.
   interface len
      module procedure tbl_len_
   end interface len
@@ -765,15 +790,16 @@ contains
     call tbl%open(name)
   end subroutine tbl_close_open_
 
-  !> Retrieves the number of elements in the table
+  !> Retrieves the number of elements in the currently opened table.
   !!
-  !! Retrieves the number of elements in the table.
+  !! Retrieves the number of elements in the currently opened table.
   function tbl_len_(tbl) result(len)
     type(luaTbl), intent(in) :: tbl
     integer :: len
     len = aot_table_length(tbl%lua%L,tbl%h)
   end function tbl_len_
   
+  !> @isee luaTbl::create
   function tbl_create_str_(tbl,name) result(tbl_new)
     class(luaTbl), intent(inout), target :: tbl
     character(len=*), intent(in) :: name
@@ -799,6 +825,7 @@ contains
     
   end function tbl_create_str_
 
+  !> @isee luaTbl::create
   function tbl_create_int_(tbl,pos) result(tbl_new)
     class(luaTbl), intent(inout), target :: tbl
     integer, intent(in) :: pos
@@ -817,6 +844,7 @@ contains
     
   end function tbl_create_int_
 
+  !> @isee luaTbl::create
   function tbl_create_(tbl) result(tbl_new)
     class(luaTbl), intent(inout), target :: tbl
 
@@ -840,7 +868,9 @@ contains
 
 
 
-#ifndef DOX_SKIP_THIS
+  ! Internal used interfaces
+
+  !> @cond SHOW_PRIVATE
 
   ! Documentation @ interface
   function tbl_create_by_handle_key__(lua,parent,key) result(handle)
@@ -879,10 +909,9 @@ contains
     call aot_table_open(lua%L,parent, thandle = handle )
   end function tbl_create_by_handle__
 
-#endif
+  !> @endcond
 
-
-#ifndef DOX_SKIP_THIS
+  !> @cond SHOW_PRIVATE
 
   ! get and set character
   subroutine set_s_(tbl,name,val)
@@ -1148,11 +1177,6 @@ contains
 
   !#######  END DOUBLE     ###############
 
-#endif
-
-
-
-#ifndef DOX_SKIP_THIS
 
   ! get and set character
   subroutine get_s_(tbl,name,val)
@@ -1432,6 +1456,6 @@ contains
 
   !#######  END DOUBLE     ###############
 
-#endif
+  !> @endcond
 
 end module flook
