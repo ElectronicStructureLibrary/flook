@@ -1,4 +1,4 @@
-# @lib
+# flook
 
 Library for defining input/output data through Lua interface.
 
@@ -20,12 +20,12 @@ might occur:
       end program
 
 At each intermediate point one wishes to communicate with a scripting language.  
-@lib lets you communicate @f and @lua.
+flook lets you communicate fortran and Lua.
 
 
 ## Dowloading and installation
 
-Installing @lib requires you to first fetch the library which is currently hosted at Github.
+Installing flook requires you to first fetch the library which is currently hosted at Github.
 
 To fetch all required files do this
 
@@ -44,7 +44,7 @@ At this point you should see the following directories and files:
     drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 src
     drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 test
 
-To compile @lib you need a minimal `arch.make` file.  
+To compile flook you need a minimal `arch.make` file.  
 The content of `arch.make` which should be located in the top directory can be this
 (please correct format to conform to `Makefile` standards):
 
@@ -67,18 +67,18 @@ Type `make` and possibly `make check` to run the tests in the [test](test/) dire
 
 Now comes the worst part. 
 
-@lib consists intrinsically of 4 libraries, 
+flook consists intrinsically of 4 libraries, 
 1. Lua library (`-llua`),
 2. fortran to Lua interface (`-lflu`), 
 3. basic fortran Lua interaction layer (`-laotus`),  
-4. @lib (`-lflook`).
+4. flook (`-lflook`).
 
 I thank [Harald Klimach](https://bitbucket.org/haraldkl) which hosts the required lower 
 level libraries for direct Lua interaction.
 
 Currently I do not have time to reduce these to fewer libraries but PR are always appreciated!
 
-In order to link properly to @lib you can use this template (`Makefile`) for for include statements and library linking 
+In order to link properly to flook you can use this template (`Makefile`) for for include statements and library linking 
 (note that you should _not_ switch the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
@@ -96,10 +96,10 @@ for linking the program you need `$(FLOOK_LIBS)` on the command line.
 Several examples exists in the [test](test/) directory where one of the cases
 are shown in the following example:
 @include exp_flook.f90
-The above program is a @f program which communicates with an embedded @lua
-@env. It communicates with @lua 6 times and allows retrieval of elements
+The above program is a fortran program which communicates with an embedded Lua
+environment. It communicates with Lua 6 times and allows retrieval of elements
 and changing the elements.
-The communicating @lua code looks like this:
+The communicating Lua code looks like this:
 @include exp_flook.lua
 
 
