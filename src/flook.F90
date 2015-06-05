@@ -1,16 +1,16 @@
 ! @LICENSE@ see Copyright notice.
 
-!> Accomodates a generic interface for mingling data structures between an
-!! embedded @lua library and @f.
+!> Accomodates a generic interface for communicating data between an
+!! embedded @lua @env and @f.
+!!
 !! In particular one can insert @f calls in LUA and return
 !! information to @lua scripts.
 
 !> A generic and simple interface for running scripts in @f via a @lua
 !! channel.
 !!
-!! The library opens an embedded @lua state and enables the user to call
+!! The library opens an embedded @lua @env and enables the user to call
 !! @lua code at certains points in the @f pipeline.
-!! The interface enables direct interaction through 
 
 !> @author 
 !!  Nick Papior Andersen
@@ -23,7 +23,7 @@ module flook
   use, intrinsic :: iso_c_binding
   use flu_binding
 
-  ! Pre-load all aotus modules
+  ! Pre-load all needed aotus modules
   use aot_table_module
   use aotus_module
 
@@ -78,6 +78,8 @@ module flook
   !! call lua%close()
   !! \endcode
   type :: luaState
+
+     !> @cond SHOW_INSTANCE_VARIABLES
      
      !> Reference to the underlying library controlling @lua.
      !! This data type is the communication layer to @lua.
@@ -97,14 +99,19 @@ module flook
      !! which will close the current instance and re-open a new.
      logical :: initialized = .false.
 
+     !> @endcond
+
    contains
 
      ! Generate a generic interface for initialization of
      ! a @lua backend.
+     !> @cond SHOW_PRIVATE
      !> @isee luaState::init
      procedure, pass :: state_init_
      !> @isee luaState::init
      procedure, pass :: state_init_ptr_
+     !> @endcond 
+
      !> Initialization of a new @lua @env. 
      !! Can be instantiated either by no arguments (creates a new @lua @env)
      !! or by passing a C-pointer which extracts the current @lua @env from
@@ -122,10 +129,13 @@ module flook
      generic :: init => state_init_, state_init_ptr_
 
      ! Close the @lua state
+     !> @cond SHOW_PRIVATE
      !> @isee luaState::close or luaState::quit
      procedure, pass :: state_close_
      !> @isee luaState::close
      generic :: quit => state_close_
+     !> @endcond
+
      !> Closes the current @lua @env.
      !!
      !! Closes the @lua @env for processing. After a call to this
@@ -134,13 +144,53 @@ module flook
      generic :: close => state_close_
 
      ! Register functions
+     !> @cond SHOW_PRIVATE
      !> @isee luaState::register
      procedure, pass :: reg_func_
+     !> @endcond
+
+     !> Register @f functions to be called directly from @lua.
+     !!
+     !!
+     !! Allows registrering @f functions as callable functions in @lua.
+     !! 
+     !! Example:
+     !! \code{.f90}
+     !! function f(L_c) result(nret) bind(c)
+     !!  type(c_ptr), value : L_c
+     !!  type(fl_state) :: L
+     !!  L = fl_ptr2state(L_c)
+     !!     ! do operations
+     !!  nret = 0
+     !! end function
+     !! subroutine register_fortran_funcs()
+     !!  call fl_reg(L,name='fortran_f',func=f)
+     !! end subroutine
+     !! \endcode
+     !! Inside the @lua script you can then
+     !! call the `f` code using this:
+     !! \code{.lua}
+     !! fortran_f()
+     !! \endcode
+     !!
+     !! Some notes on the function declaration.
+     !! The returned result `nret` is an integer count of how many
+     !! objects on the stack you wish to return.
+     !! For instance, if you create a single table in the `f` function
+     !! `nret = 1` and the @lua call had to be `tbl = fortran_f()`.
+     !!
+     !! \param[in] lua A @lua state
+     !! \param[in] name The exposed function name in @lua
+     !! \param[in] func The @f function passed by pointer to be attached to 
+     !!    the @lua @env.
      generic :: register => reg_func_
 
      ! Run specific code/files in the @lua state
+     !> @cond SHOW_PRIVATE
      !> @isee luaState::run
      procedure, pass :: state_run_
+     !> @endcond
+
      !> Runs either code by `character(len=*)` or by reading a file.
      !!
      !! Run @lua code from either direct interaction, or by
@@ -206,10 +256,13 @@ module flook
      ! associated with the key name in the current 
      ! scope.
      ! Interface for retrieving stuff from the stack
+     !> @cond SHOW_PRIVATE
      !> @isee table
      procedure, pass :: state_tbl_
      !> @isee table
      procedure, pass :: state_top_tbl_
+     !> @endcond
+
      !> Creation/retrieving tables via either names or from the top of the @lua stack in the
      !! current @env.
      !!
@@ -258,8 +311,10 @@ module flook
 
   end type luaState
 
+  !> @cond SHOW_PRIVATE
   ! Signals to the table that it hasn't been created yet
   integer, parameter :: LUA_TBL_UNDEFINED = -9999999 !> @internal for table recognition
+  !> @endcond
 
   public :: luaTbl
   ! Create a type to contain a table.
@@ -267,6 +322,8 @@ module flook
   !! 
   !! @lua handle for a table.
   type :: luaTbl
+
+     !> @cond SHOW_INSTANCE_VARIABLES
 
      !> Handle for the @lua table
      !!
@@ -286,51 +343,121 @@ module flook
      !! for the @lua state.
      type(luaState), pointer :: lua => null()
 
+     !> @endcond
+
    contains
 
      ! Create a new table and push it on this object
+     !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_open_
+     !> @endcond
+
+     !> Opens a table in the current table tree.
+     !!
+     !! If this object already has an open table
+     !! it will open all named arguments as a nested
+     !! table.
+     !!
+     !! This openening provides easy access to several
+     !! nested tables using a "." notation.
+     !! Hence providing luaTbl::open::name with 
+     !! value `main.nested.nested` a table
+     !! will be created with this equivalent @lua code:
+     !! \code{.lua}
+     !! main = { nested = { nested } } }
+     !! \endcode
+     !! 
+     !! By using the @opt keyword luaTbl::open::lvls
+     !! one can retrieve how many levels was opened
+     !! by luaTbl::open. This is handy when you want
+     !! to close as many nested tables as you have just
+     !! opened.
+     !! Hence you can do:
+     !! \code{.f90}
+     !! lvls = 0
+     !! call luaTbl%open("main.nested.nested",lvls = lvls)
+     !! ! do operations
+     !! call luaTbl%close(lvls = lvls)
+     !! \endcode
+     !! __Note__ the initialization of `lvls = 0`, this 
+     !! is needed to as one can re-use the same operation
+     !! for nested operation of the table.
+     !! \code{.f90}
+     !! lvls = 0
+     !! call luaTbl%open("main.nested.nested",lvls = lvls)
+     !! ! do operations at this level
+     !! call luaTbl%open("more.nested",lvls = lvls)
+     !! ! do more opeartions at this, deeper, level.
+     !!
+     !! ! Finally return to the level at `lvls = 0`
+     !! call luaTbl%close(lvls = lvls)
+     !! \endcode
+     !! 
+     !! \param[in] name the table
+     !! \param[out] lvls @opt keep track of how many levels was actually opened
      generic :: open => tbl_open_
 
+     !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_
+     !> @endcond
+
+     !> Closes a @lua table.
+     !!
+     !! This closes an open table which disables it from
+     !! interaction using the handle `handle`.
+     !!
+     !! \param[in] tree @opt whether the entire table tree will be closed
+     !! \param[in] lvls @opt the number of levels that will be closed
      generic :: close => tbl_close_
+
+     !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_tree_
+     !> @endcond
+
+     !> Shorthand for `close(tree=.true.)`
      generic :: close_tree => tbl_close_tree_
 
+     !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_close_open_
+     !> @endcond
+
      generic :: close_open => tbl_close_open_
 
+     !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_create_str_, tbl_create_int_
      procedure, pass :: tbl_create_
-  !> Open/create a @lua table.
-  !!
-  !! Open or creates a @lua table to be post-processed in
-  !! @f.
-  !! 
-  !! This function returns a handle for a table within the 
-  !! `parent` table, or if the `parent` has not been passed
-  !! within the global scope.
-  !!
-  !! If you supply a `key` it will try and open the table
-  !! at that respective key. If the key already has a
-  !! table it will open that and interact with that table,
-  !! else it will create a new table and create the it in
-  !! the key.
-  !!
-  !! The key can either be a string or an integer
-  !! specifying an indexable position or hashable position of
-  !! the table.
-  !!
-  !! Note that the table handle is an integer and per-see only
-  !! has meaning for the @lua library.
-  !!
-  !! \param[inout] state A @lua state
-  !! \param[in] parent A parent table handle
-  !! \param[in] key The key which is queried
-  !! \return a table handle 
+     !> @endcond
+
+     !> Open/create a @lua table.
+     !!
+     !! Open or creates a @lua table to be post-processed in
+     !! @f.
+     !! 
+     !! This function returns a handle for a table within the 
+     !! `parent` table, or if the `parent` has not been passed
+     !! within the global scope.
+     !!
+     !! If you supply a `key` it will try and open the table
+     !! at that respective key. If the key already has a
+     !! table it will open that and interact with that table,
+     !! else it will create a new table and create the it in
+     !! the key.
+     !!
+     !! The key can either be a string or an integer
+     !! specifying an indexable position or hashable position of
+     !! the table.
+     !!
+     !! Note that the table handle is an integer and per-see only
+     !! has meaning for the @lua library.
+     !!
+     !! \param[inout] state A @lua state
+     !! \param[in] parent A parent table handle
+     !! \param[in] key The key which is queried
+     !! \return a table handle 
      generic :: create => tbl_create_str_, tbl_create_int_, &
           tbl_create_
 
+     !> @cond SHOW_PRIVATE
      procedure, pass :: set_s_
      procedure, pass :: set_b_0d_, set_b_1d_, set_b_2d_
      procedure, pass :: set_i_0d_, set_i_1d_, set_i_2d_
@@ -340,34 +467,36 @@ module flook
      procedure, pass :: open_set_i_1d_, open_set_i_2d_
      procedure, pass :: open_set_s_1d_, open_set_s_2d_
      procedure, pass :: open_set_d_1d_, open_set_d_2d_
+     !> @endcond
 
-  !> Stores values in @lua tables.
-  !!
-  !! Stores @f arrays in @lua tables by direct indices
-  !! and bounds.
-  !! It preserves any bounds found by the passed array
-  !! and expresses that in the equivalent @lua table.
-  !!
-  !! The @lua table passed can be expressed in two different
-  !! methods:
-  !! - __parent__, __key__ based, where an initial #fl_tbl
-  !!   is called to create, or retrieve a table by key before
-  !!   storing the array in that table.
-  !!   
-  !!   __NOTE__: Currently this is only implemented using a character `key`.
-  !! - __handle__ based, an existing table has been created by the user
-  !!   and subsequent storage is directly in this table.
-  !!   This is handy if you want to assign other information subsequently.
-  !!
-  !! \param[inout] state A @lua state
-  !! \param NOT-INP See the above explanation for details.
-  !! \param[in] val The array to be stored, either 1D or 2D
+     !> Stores values in @lua tables.
+     !!
+     !! Stores @f arrays in @lua tables by direct indices
+     !! and bounds.
+     !! It preserves any bounds found by the passed array
+     !! and expresses that in the equivalent @lua table.
+     !!
+     !! The @lua table passed can be expressed in two different
+     !! methods:
+     !! - __parent__, __key__ based, where an initial #fl_tbl
+     !!   is called to create, or retrieve a table by key before
+     !!   storing the array in that table.
+     !!   
+     !!   __NOTE__: Currently this is only implemented using a character `key`.
+     !! - __handle__ based, an existing table has been created by the user
+     !!   and subsequent storage is directly in this table.
+     !!   This is handy if you want to assign other information subsequently.
+     !!
+     !! \param[inout] state A @lua state
+     !! \param NOT-INP See the above explanation for details.
+     !! \param[in] val The array to be stored, either 1D or 2D
      generic :: set => set_s_, &
           set_b_0d_, set_b_1d_, set_b_2d_, set_i_0d_, set_i_1d_, set_i_2d_, &
           set_s_0d_, set_s_1d_, set_s_2d_, set_d_0d_, set_d_1d_, set_d_2d_, &
           open_set_b_1d_, open_set_b_2d_, open_set_i_1d_, open_set_i_2d_, &
           open_set_s_1d_, open_set_s_2d_, open_set_d_1d_, open_set_d_2d_
 
+     !> @cond SHOW_PRIVATE
      procedure, pass :: get_s_, get_s_i_
      procedure, pass :: get_b_0d_, get_b_1d_, get_b_2d_
      procedure, pass :: get_i_0d_, get_i_1d_, get_i_2d_
@@ -377,20 +506,21 @@ module flook
      procedure, pass :: open_get_i_1d_, open_get_i_2d_
      procedure, pass :: open_get_s_1d_, open_get_s_2d_
      procedure, pass :: open_get_d_1d_, open_get_d_2d_
+     !> @endcond
 
-  !> Retrieves values from @lua tables.
-  !!
-  !! Retrieves values from integer indexed @lua tables
-  !! by direct bounds searching in the @f array.
-  !! 
-  !! __Note__:
-  !! The @lua table _has_ to pre-exist __and__ all
-  !! indices within the bounds must exist in the
-  !! table.
-  !!
-  !! \param[inout] state A @lua state
-  !! \param[in] handle A table handle
-  !! \param[out] val The array to be retrieved
+     !> Retrieves values from @lua tables.
+     !!
+     !! Retrieves values from integer indexed @lua tables
+     !! by direct bounds searching in the @f array.
+     !! 
+     !! __Note__:
+     !! The @lua table _has_ to pre-exist __and__ all
+     !! indices within the bounds must exist in the
+     !! table.
+     !!
+     !! \param[inout] state A @lua state
+     !! \param[in] handle A table handle
+     !! \param[out] val The array to be retrieved
      generic :: get => get_s_, get_s_i_, & 
           get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_, &
           get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_, &
@@ -407,6 +537,8 @@ module flook
      module procedure tbl_len_
   end interface len
 
+  !> @cond SHOW_PRIVATE
+
   ! Internal interface to create tables easily
   interface tbl_create__
      module procedure tbl_create_by_handle_key__
@@ -414,12 +546,13 @@ module flook
      module procedure tbl_create_by_handle__
   end interface tbl_create__
 
+  !> @endcond
+
 contains
 
-  !> Create a new @lua @env.
-  !!
-  !! This calls the @lua library and opens up a new stack 
-  !! for calling @lua code.
+  !> @cond SHOW_PRIVATE
+
+  !> @isee luaState::init
   subroutine state_init_(lua)
     class(luaState), intent(inout) :: lua
     call lua%close()
@@ -427,14 +560,7 @@ contains
     lua%initialized = .true.
   end subroutine state_init_
 
-  !> Retrieval of states from @lua called @f functions
-  !!
-  !! The @f routines are passed a pointer to the current top  !! of the @lua stack.
-  !! This is required to modify the @lua stack inside @f.
-  !! This function translates a @lua stack pointer to a
-  !! @f @mod::luaState.
-  !!
-  !! \param[in] ptr C-pointer to @lua stack
+  !> @isee luaState::init
   subroutine state_init_ptr_(lua,ptr)
     class(luaState), intent(inout) :: lua
     type(c_ptr), value :: ptr
@@ -442,40 +568,8 @@ contains
     lua%L = flu_copyptr(ptr)
   end subroutine state_init_ptr_
 
-  !> Register @f functions to be called directly from @lua.
-  !!
-  !!
-  !! Allows registrering @f functions as callable functions in @lua.
-  !! 
-  !! Example:
-  !! \code{.f90}
-  !! function f(L_c) result(nret) bind(c)
-  !!  type(c_ptr), value : L_c
-  !!  type(fl_state) :: L
-  !!  L = fl_ptr2state(L_c)
-  !!  ! do operations
-  !!  nret = 0
-  !! end function
-  !! subroutine register_fortran_funcs()
-  !!  call fl_reg(L,name='fortran_f',func=f)
-  !! end subroutine
-  !! \endcode
-  !! Inside the @lua script you can then
-  !! call the `f` code using this:
-  !! \code{.lua}
-  !! fortran_f()
-  !! \endcode
-  !!
-  !! Some notes on the function declaration.
-  !! The returned result `nret` is an integer count of how many
-  !! objects on the stack you wish to return.
-  !! For instance, if you create a single table in the `f` function
-  !! `nret = 1` and the @lua call had to be `tbl = fortran_f()`.
-  !!
-  !! \param[in] lua A @lua state
-  !! \param[in] name The exposed function name in @lua
-  !! \param[in] func The @f function passed by pointer to be attached to 
-  !!    the @lua @env.
+
+  !> @isee luaState::register
   subroutine reg_func_(lua, name, func)
     class(luaState), intent(in) :: lua
     character(len=*), intent(in) :: name
@@ -491,20 +585,8 @@ contains
     call flu_register(lua%L,name,func)
   end subroutine reg_func_
 
-  !> Runs code in the `state` @lua @env
-  !!
-  !! Starts the `state` with running a @lua file and/or direct
-  !! code.
-  !! 
-  !! The methods are optional and if both supplied the file will
-  !! be executed first.
-  !! 
-  !! __Note__ that we currently silently discards any error messages.
-  !!
-  !! \param[in] lua A @lua state
-  !! \param[in] file File name which can be found in the current executing 
-  !!            directory. _This is your responsibility!_
-  !! \param[in] code Direct text to be executed in @lua.
+
+  !> @isee luaState::run
   subroutine state_run_(lua,file,code)
     class(luaState), intent(in) :: lua
     character(len=*), intent(in), optional :: file, code
@@ -519,23 +601,16 @@ contains
     end if
   end subroutine state_run_
 
-  !> Closes a @lua @env.
-  !!
-  !! This closes and disconnects @f from @lua by closing the 
-  !! the embedded @lua state.
-  !!
-  !! \param[inout] lua
-  !!    The open @lua handle to close.
+
+  !> @isee luaState::close
   subroutine state_close_(lua)
     class(luaState), intent(inout) :: lua
     if ( lua%initialized ) call flu_close(lua%L)
     lua%initialized = .false.
   end subroutine state_close_
 
-  !> Creates a table in the @lua state
-  !!
-  !! Creates a new table from this state and returns
-  !! a table handle.
+
+  !> @isee luaState::table
   function state_tbl_(lua,name) result(tbl)
     class(luaState), intent(inout), target :: lua
     character(len=*), intent(in) :: name
@@ -551,9 +626,7 @@ contains
     
   end function state_tbl_
 
-  !> Retrives a table from the top of the stack.
-  !!
-  !! It 
+  !> @isee luaState::table
   function state_top_tbl_(lua) result(tbl)
     class(luaState), intent(inout), target :: lua
     type(luaTbl) :: tbl
@@ -562,9 +635,14 @@ contains
     tbl%h = aot_table_top(lua%L)
   end function state_top_tbl_
 
-  !> Creation of a new table within an existing table
-  !!
-  !!...
+  !> @endcond
+
+
+  ! Here we have functions related to the table object
+
+  !> @cond SHOW_PRIVATE
+
+  !> @isee luaTbl::open
   recursive subroutine tbl_open_(tbl,name,lvls)
     class(luaTbl), intent(inout), target :: tbl
     character(len=*), intent(in) :: name
@@ -627,15 +705,7 @@ contains
 
   end subroutine tbl_open_
 
-  !> Closes a @lua table.
-  !!
-  !! This closes an open table which disables it from
-  !! interaction using the handle `handle`.
-  !!
-  !! \param[inout] tbl
-  !!    The table handle
-  !! \param[in] tree @opt whether the entire table tree will be closed
-  !! \param[in] lvls @opt the number of levels that will be closed
+  !> @isee luaTbl::close
   recursive subroutine tbl_close_(tbl,tree,lvls)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(in), optional :: tree
@@ -680,11 +750,13 @@ contains
 
   end subroutine tbl_close_
 
+  !> @isee luaTbl::close_tree
   subroutine tbl_close_tree_(tbl)
     class(luaTbl), intent(inout) :: tbl
     call tbl%close(.true.)
   end subroutine tbl_close_tree_
 
+  !> @isee luaTbl::close_open
   subroutine tbl_close_open_(tbl,name,lvls)
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
@@ -761,6 +833,11 @@ contains
     end if
     
   end function tbl_create_
+
+  !> @endcond
+
+
+
 
 
 #ifndef DOX_SKIP_THIS
