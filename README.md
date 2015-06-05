@@ -105,11 +105,11 @@ The communicating @lua code looks like this:
 
 ### Thanks
 
-Firstly, I owe [Harald Klimach](https://bitbucket.org/haraldkl) a big thanks 
+First, I owe [Harald Klimach](https://bitbucket.org/haraldkl) a big thanks 
 for the creation of [aotus](https://bitbucket.org/haraldkl/aotus) for the Lua-Fortran embedment.
 
-Secondly, I thank James Spencer for help regarding
+Second, I thank James Spencer for help regarding
 the [aotus](https://bitbucket.org/haraldkl/aotus) API.
 
-Thirdly, I thank [ESL-CECAM](http://esl.cecam.org/) for hosting a workshop for me to participate 
+Third, I thank [ESL-CECAM](http://esl.cecam.org/) for hosting a workshop for me to participate 
 and create the initial library.
