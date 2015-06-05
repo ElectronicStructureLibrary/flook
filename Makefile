@@ -23,7 +23,8 @@ lib:
 doc:
 	doxygen docs/Doxyfile
 
-.PHONY: test
+.PHONY: test check
+check: test
 test: lib
 	$(MAKE) -C test "ARCH_MAKE=$(ARCH_MAKE)" all
 

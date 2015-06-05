@@ -95,9 +95,6 @@ geom = { &
 } &
 geom.__index = geom'
   
-  integer :: err
-  character(255) :: err_string
-  
   ! the lua embedded state
   type(luaState) :: lua
 
@@ -178,8 +175,6 @@ contains
     type(luaState) :: lua
     type(luaTbl) :: tbl
 
-    real(8) :: tmp
-
     ! Copy the c-pointer to the lua-state
     call lua%init(state)
 
@@ -211,8 +206,6 @@ contains
 
     type(luaState) :: lua
     type(luaTbl) :: tbl
-
-    real(8) :: tmp
 
     ! Copy the c-pointer to the lua-state
     call lua%init(state)

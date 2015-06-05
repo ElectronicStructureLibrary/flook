@@ -1,3 +1,4 @@
+.SUFFIXES: .f90 .F90 .o .a
 
 # Set the default VPATH
 VPATH ?= $(shell pwd)
@@ -39,7 +40,7 @@ endif
 LIBS += -ldl
 
 .PHONY: all
-all: aot_passreturn passreturn tbl
+all: aot_passreturn passreturn tbl exp_flook
 
 
 .PHONY: passreturn
@@ -52,6 +53,11 @@ tbl: tbl.o
 	$(FC) -o $@ $< $(FFLAGS) $(LIBS)
 	-./$@
 
+.PHONY: exp_flook
+exp_flook: exp_flook.o
+	$(FC) -o $@ $< $(FFLAGS) $(LIBS)
+	-./$@
+
 .PHONY: aot_passreturn
 aot_passreturn: aot_passreturn.o
 	$(FC) -o $@ $< $(FFLAGS) $(LIBS)
@@ -60,4 +66,4 @@ aot_passreturn: aot_passreturn.o
 .PHONY: clean
 clean:
 	-rm -rf *.o *.mod 
-	-rm -rf passreturn
+	-rm -rf passreturn aot_passreturn exp_flook tbl

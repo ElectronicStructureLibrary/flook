@@ -34,53 +34,169 @@ module flook
   private
 
   ! Default variables for passing float and double
-  integer, parameter :: i4b = selected_int_kind(r=9) !< Internal precision
-  integer, parameter :: i8b = selected_int_kind(r=18) !< Internal precision
-  integer, parameter :: r4b = selected_real_kind(p=6) !< Internal precision
-  integer, parameter :: r8b = selected_real_kind(p=15) !< Internal precision
+  integer, parameter :: i4b = selected_int_kind(r=9) !< @internal precision
+  integer, parameter :: i8b = selected_int_kind(r=18) !< @internal precision
+  integer, parameter :: r4b = selected_real_kind(p=6) !< @internal precision
+  integer, parameter :: r8b = selected_real_kind(p=15) !< @internal precision
 
   public :: luaState
-  ! Create information about the lua-state
-  !> \fn luaState
-  !! @lua handle for a current state
+  !> @lua handle for the current @lua @env.
+  !! It provides the handles and interaction level with the @lua @env.
   !!
-  !! Pointer to the @lua handle which exposes the 
-  !! @lua library to the user.
-  !! This type is the handle for everything performed by @lib
+  !! This type is the back-bone of the @lib methodology.
+  !! It contains a reference to a @lua @env which is
+  !! the equivalent of a @lua shell embedded in the application.
+  !! This lets you create several @lua @envs simulatenously
+  !! and/or open close new/old ones, at will.
+  !!
+  !! It provides several class procedures which enables 
+  !! direct interaction with the @lua @env as well
+  !! as the creation of a @mod::luaTbl.
+  !!
+  !! All procedures related to this type are created
+  !! with the object methodology in mind. Hence @f 2003 knowledge might
+  !! be applicable.
+  !!
+  !! \section Usage
+  !! As an example we will create a new @lua instance and close
+  !! it
+  !! \code{.f90}
+  !! type(luaState) :: lua
+  !! 
+  !! ! Create a new lua environment
+  !! call lua%init()
+  !! 
+  !! ! At this point you can interact with lua through
+  !! ! the other procedures in the state.
+  !! 
+  !! ! Close lua, and create a new one (clears the lua stack
+  !! ! for a fresh restart)
+  !! call lua%init()
+  !!
+  !! ! Do some operations...
+  !! !  ... and finally close it
+  !! call lua%close()
+  !! \endcode
   type :: luaState
      
-     !> Reference to the underlying library controlling @lua
+     !> Reference to the underlying library controlling @lua.
+     !! This data type is the communication layer to @lua.
+     !! You should never need to use this.
      !!
-     !! The @lua instance controlled in this type.
+     !! @internal data structure for retaining the @lua
+     !! @env in the state. It should only be used 
+     !! internally in @lib.
      type(flu_State) :: L
 
-     !> Logical which specifies whether the state
-     !! has been initialized or not.
+     !> Field for denoting a running or non-initialized @lua instance.
      !!
-     !! This enables one to re-call `this%init()` which will
-     !! close a currently running state in the variable (if any) 
-     !! and open a new one.
+     !! @internal data structure for retaining the status
+     !! of the @env.
+     !! 
+     !! You can re-call `this%%init()` on an open @lua @env
+     !! which will close the current instance and re-open a new.
      logical :: initialized = .false.
 
    contains
 
      ! Generate a generic interface for initialization of
      ! a @lua backend.
+     !> @isee luaState::init
      procedure, pass :: state_init_
+     !> @isee luaState::init
      procedure, pass :: state_init_ptr_
+     !> Initialization of a new @lua @env. 
+     !! Can be instantiated either by no arguments (creates a new @lua @env)
+     !! or by passing a C-pointer which extracts the current @lua @env from
+     !! an already running instance.
+     !!
+     !! Creates new @lua @envs by starting @lua.
+     !! 
+     !! If the luaState is an already opened @lua @env, it will be closed by an 
+     !! `call luaState%%close()`.
+     !! 
+     !! Then, a new @lua @env will be created and will be made available
+     !! to interact with @lua.
+     !!
+     !! You cannot interact with @lua until you have called ``luaState%%init``.
      generic :: init => state_init_, state_init_ptr_
 
      ! Close the @lua state
+     !> @isee luaState::close or luaState::quit
      procedure, pass :: state_close_
-     generic :: close => state_close_
+     !> @isee luaState::close
      generic :: quit => state_close_
+     !> Closes the current @lua @env.
+     !!
+     !! Closes the @lua @env for processing. After a call to this
+     !! you will have to initialize a new @lua instance before you can
+     !! proceed.
+     generic :: close => state_close_
 
      ! Register functions
+     !> @isee luaState::register
      procedure, pass :: reg_func_
      generic :: register => reg_func_
 
      ! Run specific code/files in the @lua state
+     !> @isee luaState::run
      procedure, pass :: state_run_
+     !> Runs either code by `character(len=*)` or by reading a file.
+     !!
+     !! Run @lua code from either direct interaction, or by
+     !! running a file.
+     !!
+     !! The default mode is that it will run the file given as the
+     !! argument (`file`-keyword).
+     !!
+     !! By passing a `code = character(*)` by named argument one
+     !! can execute specific code.
+     !!
+     !! A few examples:
+     !!
+     !! \code{.f90}
+     !! type(luaState) :: lua
+     !! call lua%init()
+     !! 
+     !! ! Call initialization file called 'init_file.lua'
+     !! call lua%run( 'init_file.lua' )
+     !!
+     !! ! Call lua code
+     !! call lua%run( code = 'table = {}' )
+     !! call lua%run( code = 'table.item = 1.' )
+     !!
+     !! call lua%close()
+     !! \endcode
+     !!
+     !! The equivalent @lua code would be:
+     !! \code{.lua}
+     !! dofile("init_file.lua")
+     !! table = {}
+     !! tabel.item = 1.
+     !! \endcode
+     !!
+     !! To create an interactive @lua enviroment in @f
+     !! you do a loop
+     !! \code{.f90}
+     !! type(luaState) :: lua
+     !! character(len=512) :: line
+     !! do 
+     !!   ! Read line
+     !!   read(*,*) line
+     !!   call lua%run( code = line )
+     !! end do
+     !! call lua%close()
+     !! \endcode
+     !! Note that running @lua like the above example may require
+     !! additional work as each line segment has to be completed.
+     !! Hence executing several lines in a disconnected way is
+     !! not as easy.
+     !!
+     !! If both `file` and `code` arguments has been given,
+     !! first the file with be executed, then the code.
+     !!
+     !! \param[in] file @opt executes a `dofile(file)` in @lua
+     !! \param[in] code @opt executes `code` in @lua
      generic :: run => state_run_
 
      ! Interface for table creation
@@ -90,18 +206,64 @@ module flook
      ! associated with the key name in the current 
      ! scope.
      ! Interface for retrieving stuff from the stack
+     !> @isee table
      procedure, pass :: state_tbl_
+     !> @isee table
      procedure, pass :: state_top_tbl_
+     !> Creation/retrieving tables via either names or from the top of the @lua stack in the
+     !! current @env.
+     !!
+     !! Create a table in the main environment by names (creates a new table)
+     !! or retrieve a table from the stack (via function calls).
+     !!
+     !! The table name has the same format as luaTbl::open.
+     !!
+     !! See @mod::luaTbl for specifications of the return value.
+     !!
+     !! As an example:
+     !! \code{.f90}
+     !! type(luaState) :: lua
+     !! type(luaTbl) :: tbl
+     !! 
+     !! ! Create new lua env
+     !! call lua%init()
+     !! 
+     !! ! Create a table as a variable
+     !! tbl = lua%table('main')
+     !! ! Close it again
+     !! 
+     !! ! Create a nested table inside `main`
+     !! call tbl%open('main.nest_one.nest_two')
+     !!
+     !! ! Close the entire tree
+     !! call tbl%close_tree()
+     !!
+     !! ! You can also do everything at one time
+     !! tbl = lua%table('new.nest_one.nest_two')
+     !! 
+     !! \endcode
+     !! The equivalent @lua code would look like:
+     !! \code{.lua}
+     !! main = {}
+     !! main.nest_one = {}
+     !! main.nest_one.nest_two = {}
+     !! -- Or in compact form:
+     !! new = { nest_one = { nest_two = {} } }
+     !! \endcode
+     !!
+     !! \param[in] name @opt name of table to open, can be "." 
+     !! delimited as luaTbl::open
+     !! \return luaTbl the table object to post-process
      generic :: table => state_tbl_, state_top_tbl_
 
   end type luaState
 
   ! Signals to the table that it hasn't been created yet
-  integer, parameter :: LUA_TBL_UNDEFINED = -9999999
+  integer, parameter :: LUA_TBL_UNDEFINED = -9999999 !> @internal for table recognition
 
   public :: luaTbl
   ! Create a type to contain a table.
-  !> \fn luaTbl
+  !> luaTbl
   !! 
   !! @lua handle for a table.
   type :: luaTbl
@@ -254,7 +416,7 @@ module flook
 
 contains
 
-  !> Create a new @lua environment.
+  !> Create a new @lua @env.
   !!
   !! This calls the @lua library and opens up a new stack 
   !! for calling @lua code.
@@ -270,7 +432,7 @@ contains
   !! The @f routines are passed a pointer to the current top  !! of the @lua stack.
   !! This is required to modify the @lua stack inside @f.
   !! This function translates a @lua stack pointer to a
-  !! @f #luaState.
+  !! @f @mod::luaState.
   !!
   !! \param[in] ptr C-pointer to @lua stack
   subroutine state_init_ptr_(lua,ptr)
@@ -310,10 +472,10 @@ contains
   !! For instance, if you create a single table in the `f` function
   !! `nret = 1` and the @lua call had to be `tbl = fortran_f()`.
   !!
-  !! \param[in] state A @lua state
+  !! \param[in] lua A @lua state
   !! \param[in] name The exposed function name in @lua
   !! \param[in] func The @f function passed by pointer to be attached to 
-  !!    the @lua environment.
+  !!    the @lua @env.
   subroutine reg_func_(lua, name, func)
     class(luaState), intent(in) :: lua
     character(len=*), intent(in) :: name
@@ -329,7 +491,7 @@ contains
     call flu_register(lua%L,name,func)
   end subroutine reg_func_
 
-  !> Runs code in the `state` @lua environment
+  !> Runs code in the `state` @lua @env
   !!
   !! Starts the `state` with running a @lua file and/or direct
   !! code.
@@ -339,7 +501,7 @@ contains
   !! 
   !! __Note__ that we currently silently discards any error messages.
   !!
-  !! \param[in] state A @lua state
+  !! \param[in] lua A @lua state
   !! \param[in] file File name which can be found in the current executing 
   !!            directory. _This is your responsibility!_
   !! \param[in] code Direct text to be executed in @lua.
@@ -357,12 +519,12 @@ contains
     end if
   end subroutine state_run_
 
-  !> Closes a @lua environment.
+  !> Closes a @lua @env.
   !!
   !! This closes and disconnects @f from @lua by closing the 
   !! the embedded @lua state.
   !!
-  !! \param[inout] state
+  !! \param[inout] lua
   !!    The open @lua handle to close.
   subroutine state_close_(lua)
     class(luaState), intent(inout) :: lua
@@ -465,24 +627,15 @@ contains
 
   end subroutine tbl_open_
 
-  !> Retrieves the number of elements in the table
-  !!
-  !! Retrieves the number of elements in the table.
-  function tbl_len_(tbl) result(len)
-    type(luaTbl), intent(in) :: tbl
-    integer :: len
-    len = aot_table_length(tbl%lua%L,tbl%h)
-  end function tbl_len_
-
   !> Closes a @lua table.
   !!
   !! This closes an open table which disables it from
   !! interaction using the handle `handle`.
   !!
-  !! \param[inout] state
-  !!    The @lua handle where the table reference exist.
-  !! \param[inout] handle
-  !!    The table handle that is closed for input/output.
+  !! \param[inout] tbl
+  !!    The table handle
+  !! \param[in] tree @opt whether the entire table tree will be closed
+  !! \param[in] lvls @opt the number of levels that will be closed
   recursive subroutine tbl_close_(tbl,tree,lvls)
     class(luaTbl), intent(inout) :: tbl
     logical, intent(in), optional :: tree
@@ -532,12 +685,22 @@ contains
     call tbl%close(.true.)
   end subroutine tbl_close_tree_
 
-  subroutine tbl_close_open_(tbl,name)
+  subroutine tbl_close_open_(tbl,name,lvls)
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    call tbl%close()
+    integer, intent(in), optional :: lvls
+    call tbl%close(lvls=lvls)
     call tbl%open(name)
   end subroutine tbl_close_open_
+
+  !> Retrieves the number of elements in the table
+  !!
+  !! Retrieves the number of elements in the table.
+  function tbl_len_(tbl) result(len)
+    type(luaTbl), intent(in) :: tbl
+    integer :: len
+    len = aot_table_length(tbl%lua%L,tbl%h)
+  end function tbl_len_
   
   function tbl_create_str_(tbl,name) result(tbl_new)
     class(luaTbl), intent(inout), target :: tbl
@@ -679,9 +842,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     logical, intent(in) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_b_1d_
 
   ! Documentation @ interface
@@ -705,9 +870,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     logical, intent(in) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_b_2d_
 
   !####### END LOGICAL   ###############
@@ -739,9 +906,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     integer, intent(in) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_i_1d_
 
   ! Documentation @ interface
@@ -765,9 +934,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     integer, intent(in) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_i_2d_
 
   !####### END INTEGER   ###############
@@ -799,9 +970,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r4b), intent(in) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_s_1d_
 
   ! Documentation @ interface
@@ -825,9 +998,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r4b), intent(in) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_s_2d_
 
   !#######  END REAL     ###############
@@ -859,9 +1034,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r8b), intent(in) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_d_1d_
 
   ! Documentation @ interface
@@ -885,9 +1062,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r8b), intent(in) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%set(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_set_d_2d_
 
   !#######  END DOUBLE     ###############
@@ -944,9 +1123,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     logical, intent(inout) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_b_1d_
 
   ! Documentation @ interface
@@ -970,9 +1151,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     logical, intent(inout) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_b_2d_
 
   !####### END LOGICAL   ###############
@@ -1005,9 +1188,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     integer, intent(inout) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_i_1d_
 
   ! Documentation @ interface
@@ -1031,9 +1216,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     integer, intent(inout) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_i_2d_
 
   !####### END INTEGER   ###############
@@ -1066,9 +1253,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r4b), intent(inout) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_s_1d_
 
   ! Documentation @ interface
@@ -1092,9 +1281,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r4b), intent(inout) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_s_2d_
 
   !#######  END REAL     ###############
@@ -1127,9 +1318,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r8b), intent(inout) :: val(:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_d_1d_
 
   ! Documentation @ interface
@@ -1153,9 +1346,11 @@ contains
     class(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
     real(r8b), intent(inout) :: val(:,:)
-    call tbl%open(name)
+    integer :: lvls
+    lvls = 0
+    call tbl%open(name,lvls=lvls)
     call tbl%get(val)
-    call tbl%close()
+    call tbl%close(lvls=lvls)
   end subroutine open_get_d_2d_
 
   !#######  END DOUBLE     ###############
