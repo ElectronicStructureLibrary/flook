@@ -24,9 +24,9 @@ AOTUS_LIBS+= $(AOTUS_DIR)/LuaFortran/libflu.a
 endif
 
 # The different libraries
-OBJS = fluaput.o
+OBJS = flook.o
 
-LIB = libfluaput.a
+LIB = libflook.a
 
 .PHONY: default
 default: lib

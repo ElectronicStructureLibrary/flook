@@ -35,8 +35,8 @@ program main
             Using the LUA interface &
        --]] &
        print("Hello from FORTRAN") &
-       fluaput = {} &
-       function fluaput.print(arg) &
+       flook = {} &
+       function flook.print(arg) &
          print(arg) &
        end'
 
@@ -44,14 +44,13 @@ program main
 --[[ &
    Initialize a lua matrix &
 --]] &
-fluaput = {} &
-function fluaput.crt_mat(a,b,c,d,e,f) &
+function flook.crt_mat(a,b,c,d,e,f) &
    if a == nil then &
       return 0. &
    else &
       local t = {} &
       for i = 1 , a do &
-	 t[i] = fluaput.crt_mat(b,c,d,e,f) &
+	 t[i] = flook.crt_mat(b,c,d,e,f) &
       end &
       return t &
    end &
@@ -67,10 +66,10 @@ geom = { &
       needed for communication &
    --]] &
    init = function (self) &
-      self["cell"] = fluaput.crt_mat(3,3) &
+      self["cell"] = flook.crt_mat(3,3) &
       setmetatable(self["cell"],self) &
       for _,v in pairs({"xa"}) do &
-	 self[v] = fluaput.crt_mat(3,self.size) &
+	 self[v] = flook.crt_mat(3,self.size) &
       end &
       self["fa"] = {} &
       setmetatable(self["xa"],self) &

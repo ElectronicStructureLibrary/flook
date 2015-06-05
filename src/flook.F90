@@ -17,7 +17,7 @@
 
 !> @copyright LGPL
 
-module fluaput
+module flook
 
   ! Required libraries (which should be fully separated to the user)
   use, intrinsic :: iso_c_binding
@@ -40,7 +40,7 @@ module fluaput
   integer, parameter :: r8b = selected_real_kind(p=15) !< Internal precision
 
   ! Create information about the lua-state
-  !> \fn fl_state
+  !> \fn luaState
   !! @lua handle for a current state
   !!
   !! Pointer to the @lua handle which exposes the 
@@ -1123,4 +1123,4 @@ contains
 
 #endif
 
-end module fluaput
+end module flook

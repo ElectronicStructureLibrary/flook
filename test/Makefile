@@ -6,9 +6,9 @@ ARCH_MAKE_DEFAULT=$(VPATH)/arch.make
 ARCH_MAKE?=$(ARCH_MAKE_DEFAULT)
 include $(ARCH_MAKE)
 
-FLUAPUT_DIR = ../src
-INC += -I$(FLUAPUT_DIR)
-LIBS += $(FLUAPUT_DIR)/libfluaput.a
+FLOOK_DIR = ../src
+INC += -I$(FLOOK_DIR)
+LIBS += $(FLOOK_DIR)/libflook.a
 
 #####
 # Define all local libraries needed
