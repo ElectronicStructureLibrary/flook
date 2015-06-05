@@ -55,6 +55,7 @@ test: lib
 clean:
 	(cd aotus ; rm -f arch.make)
 	-rm -rf doc/html doc/latex
+	-rm -f libflook.a
 	-$(MAKE) -C aotus "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C src "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C test "ARCH_MAKE=$(ARCH_MAKE)" clean
