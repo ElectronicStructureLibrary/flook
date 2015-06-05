@@ -33,11 +33,15 @@ module flook
   ! exposure by this library.
   private
 
+  !> @cond SHOW_PRIVATE
+
   ! Default variables for passing float and double
   integer, parameter :: i4b = selected_int_kind(r=9) !< @internal precision
   integer, parameter :: i8b = selected_int_kind(r=18) !< @internal precision
   integer, parameter :: r4b = selected_real_kind(p=6) !< @internal precision
   integer, parameter :: r8b = selected_real_kind(p=15) !< @internal precision
+
+  !> @endcond
 
   public :: luaState
   !> @lua handle for the current @lua @env.
