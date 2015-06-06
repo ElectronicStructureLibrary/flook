@@ -33,7 +33,7 @@ endif
 ifdef LUA_DIR
 LIBS += -L$(LUA_DIR)/lib $(LUA_LIB)
 else
-LIBS += -L../aotus/external/lua-5.3.0 -llua
+LIBS += -L../aotus/external/lua-5.3.0/src -llua
 endif
 
 # Add dl library

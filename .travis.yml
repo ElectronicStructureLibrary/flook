@@ -1,0 +1,11 @@
+language: fortran
+
+before_install:
+    - ln -s .arch.make arch.make
+    - sudo apt-get install -qq gfortran
+
+install:
+    - make
+
+script:
+    - make check
