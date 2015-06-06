@@ -28,15 +28,21 @@ lib:
 # is not a problem)
 # This simple routine extracts and comibes the
 # object files into one unified library.
-.PHONY: onelib
-onelib: lib
+ifdef LUA_DIR
+LOCAL__LUA_LIB ?= $(LUA_DIR)/lib/liblua.a
+else
+LOCAL__LUA_LIB ?= ../aotus/external/lua-5.3.0/src/liblua.a
+endif
+.PHONY: liball
+liball: lib
 	(mkdir -p .tmp_link ; cd .tmp_link ; \
 	$(AR) x ../src/libflook.a ; \
 	$(AR) x ../aotus/source/libaotus.a ; \
 	$(AR) x ../aotus/LuaFortran/libflu.a ; \
-	$(AR) r ../libflook.a *.o ; \
+	$(AR) x $(LOCAL__LUA_LIB) ; \
+	$(AR) r ../libflookall.a *.o ; \
 	cd ../ ; rm -rf .tmp_link )
-	$(RANLIB) libflook.a
+	$(RANLIB) libflookall.a
 # I have problems on unix to re-create the index table for the
 # objects... Hence this will probably not work... You can
 # try if you want to
@@ -55,7 +61,7 @@ test: lib
 clean:
 	(cd aotus ; rm -f arch.make)
 	-rm -rf doc/html doc/latex
-	-rm -f libflook.a
+	-rm -f libflookall.a
 	-$(MAKE) -C aotus "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C src "ARCH_MAKE=$(ARCH_MAKE)" clean
 	-$(MAKE) -C test "ARCH_MAKE=$(ARCH_MAKE)" clean

@@ -80,32 +80,31 @@ flook consists intrinsically of 4 libraries:
 
 However, two variants of linking is available.
 
-Currently I do not have time to reduce these to fewer libraries but PRs are always appreciated!
-
 #### Compiling for one link ####
 
-flook can combine the libraries from 2. -- 4. into one library.
+flook can combine the libraries from 1. -- 4. into one library.
 
 To do this simply call make with this command
 
-    make onelib
+    make liball
 
 which creates `libflook.a` in the top directory. With this library
-you only need to link to flook and your Lua library installation.
+you only need to link to flook.
 
-To link flook to your program you require
+To link flook to your program the following can be used in a `Makefile`
 
     FLOOK_PATH  = /path/to/flook/parent
-    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
-    FLOOK_LIBS += -L/path/to/lua/lib -llua -ldl
+    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflookall -ldl
     FLOOK_INC   = -I$(FLOOK_PATH)/src
 
 For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
 for linking the program you need `$(FLOOK_LIBS)` on the command line.
+Note that `-ldl` is a requirement for the Lua library, and per-see is more
+difficult to incorporate. 
 
 #### Direct linking ####
 
-When [one step](#compiling-for-one-link) does not work, the following method is less restrictive on the commands used.
+When [compiling for one link](#compiling-for-one-link) does not work, the following method is less restrictive on the commands used.
 
 In order to link to flook you can use this template (`Makefile`) for
 include statements and library linking (note that you should _not_ switch the order of these statements):

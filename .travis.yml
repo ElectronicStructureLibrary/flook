@@ -1,11 +1,18 @@
 language: fortran
 
+notifications:
+   email:
+      recipients:
+         - nickpapior@gmail.com
+      on_failure: always
+      on_success: change
+
 before_install:
-    - ln -s .arch.make arch.make
-    - sudo apt-get install -qq gfortran
+   - ln -s .arch.make arch.make
+   - sudo apt-get install -qq gfortran
 
 install:
-    - make
+   - make
 
 script:
-    - make check
+   - make check

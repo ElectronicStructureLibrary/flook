@@ -63,10 +63,6 @@ module flook
   !! direct interaction with the @lua @env as well
   !! as the creation of a flook::luaTbl.
   !!
-  !! All procedures related to this type are created
-  !! with the object methodology in mind. Hence @f 2003 knowledge might
-  !! be applicable.
-  !!
   !! \section Usage
   !! As an example we will create a new @lua instance and close
   !! it
@@ -74,14 +70,14 @@ module flook
   !! type(luaState) :: lua
   !! 
   !! ! Create a new lua environment
-  !! call lua%init()
+  !! call lua_init(lua)
   !! 
   !! ! At this point you can interact with lua through
   !! ! the other procedures in the state.
   !! 
   !! ! Close lua, and create a new one (clears the lua stack
   !! ! for a fresh restart)
-  !! call lua%init()
+  !! call lua_init(lua)
   !!
   !! ! Do some operations...
   !! !  ... and finally close it
@@ -105,7 +101,7 @@ module flook
      !! @internal data structure for retaining the status
      !! of the @env.
      !! 
-     !! You can re-call `this%%init()` on an open @lua @env
+     !! You can re-call `lua_init(luaState` on an open @lua @env
      !! which will close the current instance and re-open a new.
      logical :: initialized = .false.
 
@@ -128,7 +124,7 @@ module flook
   !! Then, a new @lua @env will be created and will be made available
   !! to interact with @lua.
   !!
-  !! You cannot interact with @lua until you have called `luaState%%init`.
+  !! You cannot interact with @lua until you have called `lua_init(luaState)`.
   !! \param[inout] luaState @lua handle
   !! \param[in] ptr @opt pointer to C-state
   public :: lua_init
@@ -157,12 +153,12 @@ module flook
   !! function f(L_c) result(nret) bind(c)
   !!  type(c_ptr), value : L_c
   !!  type(luaState) :: lua
-  !!  call lua%init(L_c)
+  !!  call lua_init(lua,L_c)
   !!     ! do operations
   !!  nret = 0
   !! end function
   !! subroutine register_fortran_funcs()
-  !!  call lua%register('fortran_f',func=f)
+  !!  call lua_register(lua,'fortran_f',func=f)
   !! end subroutine
   !! \endcode
   !! Inside the @lua script you can then
@@ -201,14 +197,14 @@ module flook
   !!
   !! \code{.f90}
   !! type(luaState) :: lua
-  !! call lua%init()
+  !! call lua_init(lua)
   !! 
   !! ! Call initialization file called 'init_file.lua'
-  !! call lua%run( 'init_file.lua' )
+  !! call lua_run(lua, 'init_file.lua' )
   !!
   !! ! Call lua code
-  !! call lua%run( code = 'table = {}' )
-  !! call lua%run( code = 'table.item = 1.' )
+  !! call lua_run(lua, code = 'table = {}' )
+  !! call lua_run(lua, code = 'table.item = 1.' )
   !!
   !! call lua_close(lua)
   !! \endcode
@@ -228,7 +224,7 @@ module flook
   !! do 
   !!   ! Read line
   !!   read(*,*) line
-  !!   call lua%run( code = line )
+  !!   call lua_run(lua, code = line )
   !! end do
   !! call lua_close(lua)
   !! \endcode
@@ -254,7 +250,7 @@ module flook
   !! Create a table in the main environment by names (creates a new table)
   !! or retrieve a table from the stack (via function calls).
   !!
-  !! The table name has the same format as #open.
+  !! The table name has the same format as #lua_open.
   !!
   !! See #luaTbl for specifications of the return value.
   !!
@@ -264,10 +260,10 @@ module flook
   !! type(luaTbl) :: tbl
   !! 
   !! ! Create new lua env
-  !! call lua%init()
+  !! call lua_init(lua)
   !! 
   !! ! Create a table as a variable
-  !! tbl = lua%table('main')
+  !! tbl = lua_table(lua,'main')
   !! ! Close it again
   !! 
   !! ! Create a nested table inside `main`
@@ -277,7 +273,7 @@ module flook
   !! call lua_close_tree(tbl)
   !!
   !! ! You can also do everything at one time
-  !! tbl = lua%table('new.nest_one.nest_two')
+  !! tbl = lua_table(lua,'new.nest_one.nest_two')
   !! 
   !! \endcode
   !! The equivalent @lua code would look like:
@@ -291,7 +287,7 @@ module flook
   !!
   !! \param[in] luaState the current @lua @env
   !! \param[in] name @opt name of table to open, can be "." 
-  !!    delimited as luaTbl::open
+  !!    delimited as #lua_open
   !! \return luaTbl the table object to post-process
   public :: lua_table
   interface lua_table
@@ -325,7 +321,7 @@ module flook
   !! type(luaState) :: lua
   !! type(luaTbl) :: tbl
   !! integer :: lvls
-  !! tbl = lua%table('main')
+  !! tbl = lua_table(lua'main')
   !! ! now tbl is `main = {}`
   !! call lua_open(tbl,'one.two')
   !! ! now tbl is `two = {}` in `main.one`
@@ -376,16 +372,16 @@ module flook
   !!
   !! This openening provides easy access to several
   !! nested tables using a "." notation.
-  !! Hence providing lua_open(`luaTbl%,name)` with 
+  !! Hence providing `lua_open(luaTbl,name)` with 
   !! value `main.nested.nested` a table
   !! will be created with this equivalent @lua code:
   !! \code{.lua}
   !! main = { nested = { nested } } }
   !! \endcode
   !! 
-  !! By using the @opt keyword lua_open(`luaTbl%,lvls=lvls)`
+  !! By using the @opt keyword `lua_open(luaTbl,lvls=lvls)`
   !! one can retrieve how many levels was opened
-  !! by #open. This is handy when you want
+  !! by #lua_open. This is handy when you want
   !! to close as many nested tables as you have just
   !! opened.
   !! Hence you can do:
@@ -447,9 +443,9 @@ module flook
      module procedure tbl_close_
   end interface lua_close
 
-  !> Shorthand for `close(tree=.true.)`
+  !> Shorthand for `lua_close(tree=.true.)`
   !!
-  !! @isee #close(tree=.true.)
+  !! @isee #lua_close(tree=.true.)
   public :: lua_close_tree
   interface lua_close_tree
      module procedure tbl_close_tree_
@@ -460,7 +456,7 @@ module flook
   !! The following two codes are equivalent, without ambiguity:
   !! \code{.f90}
   !! call lua_open(luaTbl,'main.nested')
-  !! call lua_close(luaTbl,)
+  !! call lua_close(luaTbl)
   !! call lua_open(luaTbl,'nested_2')
   !! \endcode
   !! and
@@ -472,8 +468,8 @@ module flook
   !! \param[inout] luaTbl the current table to interact with
   !! \param[in] name the table
   !! \param[inout] lvls @opt keep track of how many levels was actually closed
-  !!     _and_ opened, works as the statement in #close and #open
-  !! For instance doing #close_open('main',lvls=lvls) with `lvls=2` will
+  !!     _and_ opened, works as the statement in #lua_close and #lua_open
+  !! For instance doing #lua_close_open('main',lvls=lvls) with `lvls=2` will
   !! return with `lvls=1`.
   public :: lua_close_open
   interface lua_close_open
@@ -492,7 +488,7 @@ module flook
   !! at that respective name. If the name already has a
   !! table it will open that and interact with that table,
   !! else it will create a new table and create it in
-  !! the name. The table names abide to the rules in #open.
+  !! the name. The table names abide to the rules in #lua_open.
   !!
   !! \param[inout] luaTbl the table to interact with
   !! \param[in] name name of table, possibly "." separated
@@ -511,7 +507,7 @@ module flook
   !!
   !! The @lua table passed can be expressed in two different
   !! methods:
-  !! - __name__ based, where an initial #open
+  !! - __name__ based, where an initial #lua_open
   !!   is called to create, or retrieve a table by key before
   !!   storing the array in that table.
   !!   
@@ -551,7 +547,7 @@ module flook
   !!
   !! The @f variable/array passed can be expressed in two different
   !! methods:
-  !! - __name__ based, where an initial #open
+  !! - __name__ based, where an initial #lua_open
   !!   is retrieving the table by key before locating
   !!   array values from that table.
   !!   
