@@ -1,5 +1,8 @@
 # flook #
 
+.. image:: https://travis-ci.org/ElectronicStructureLibrary/flook.svg?branch=master
+    :target: https://travis-ci.org/ElectronicStructureLibrary/flook
+
 The fortran-Lua-hook library.
 
 It allows abstraction of input files to be pure Lua files to enable
