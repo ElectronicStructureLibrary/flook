@@ -11,37 +11,37 @@ program main
   type(luaState) :: lua
 
   ! Initialize the @lua environment
-  call lua%init()
+  call lua_init(lua)
 
   ! Register a couple of functions to pass information back and
   ! forth between @lua.
-  call lua%register( 'fortran_get', lua_set )
-  call lua%register( 'fortran_set', lua_get )
+  call lua_register(lua, 'fortran_get', script_set )
+  call lua_register(lua, 'fortran_set', script_get )
 
   ! Call pre-initialize script (this should define
   ! all functions that are directly called in the program.
   ! Needless to say you can create a single @lua function
   ! which will determine the path via a control parameter.
-  call lua%run( 'exp_flook.lua' )
+  call lua_run(lua, 'exp_flook.lua' )
 
-  call lua%run( code = 'pre_init()' )
+  call lua_run(lua, code = 'pre_init()' )
   call initialize()
-  call lua%run( code = 'post_init()' )
+  call lua_run(lua, code = 'post_init()' )
 
-  call lua%run( code = 'pre_calc()' )
+  call lua_run(lua, code = 'pre_calc()' )
   call calculate()
-  call lua%run( code = 'post_calc()' )
+  call lua_run(lua, code = 'post_calc()' )
 
-  call lua%run( code = 'pre_finalize()' )
+  call lua_run(lua, code = 'pre_finalize()' )
   call finalize()
-  call lua%run( code = 'post_finalize()' )
+  call lua_run(lua, code = 'post_finalize()' )
 
   ! Close @lua
-  call lua%close()
+  call lua_close(lua)
 
 contains
 
-  function lua_set(state) result(nret)
+  function script_set(state) result(nret)
     use, intrinsic :: iso_c_binding, only: c_ptr, c_int
     
     ! Define the state
@@ -52,27 +52,27 @@ contains
     type(luaState) :: lua
     type(luaTbl) :: tbl
 
-    call lua%init(state)
+    call lua_init(lua,state)
 
     ! open global table in variable struct
-    tbl = lua%table('struct')
+    tbl = lua_table(lua,'struct')
 
     ! Set the variables to the struct table:
     ! struct.control = `control`
-    call tbl%set('control',control)
+    call lua_set(tbl,'control',control)
     ! struct.matrix = `matrix`
-    call tbl%set('matrix',matrix)
+    call lua_set(tbl,'matrix',matrix)
     ! struct.vector = `vector`
-    call tbl%set('vector',vector)
+    call lua_set(tbl,'vector',vector)
 
-    call tbl%close_tree()
+    call lua_close_tree(tbl)
 
     ! this function returns nothing
     nret = 0
     
-  end function lua_set
+  end function script_set
 
-  function lua_get(state) result(nret)
+  function script_get(state) result(nret)
     use, intrinsic :: iso_c_binding, only: c_ptr, c_int
     
     ! Define the state
@@ -83,22 +83,22 @@ contains
     type(luaState) :: lua
     type(luaTbl) :: tbl
 
-    call lua%init(state)
+    call lua_init(lua,state)
 
     ! open global table in variable struct
-    tbl = lua%table('struct')
+    tbl = lua_table(lua,'struct')
 
     ! Get the variables from the struct table:
-    call tbl%get('control',control)
-    call tbl%get('matrix',matrix)
-    call tbl%get('vector',vector)
+    call lua_get(tbl,'control',control)
+    call lua_get(tbl,'matrix',matrix)
+    call lua_get(tbl,'vector',vector)
 
-    call tbl%close_tree()
+    call lua_close_tree(tbl)
 
     ! this function returns nothing
     nret = 0
     
-  end function lua_get
+  end function script_get
   
   subroutine initialize()
     control = 0.

@@ -186,8 +186,6 @@ contains
 
     type(flu_State) :: L
 
-    integer :: t
-
     ! Copy the c-pointer to the lua-state
     L = flu_copyptr(state)
 
@@ -262,7 +260,6 @@ contains
 
     ! Local variables
     integer :: geom
-    type(aot_fun_type) :: fun
 
     type(flu_State) :: L
 
