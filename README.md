@@ -29,11 +29,11 @@ flook lets you communicate fortran and Lua. For an elaborate example see [Exampl
 ## Downloading and installation ##
 
 Installing flook requires you to first fetch the library which is currently
-hosted at Github [flook@git].
+hosted at [github](https://github.com/) at [flook@git].
 
 To fetch all required files do this
 
-	git clone git@github.com:ElectronicStructureLibrary/flook.git
+	git clone https://github.com/ElectronicStructureLibrary/flook.git
     cd flook
     git submodule init
     git submodule update
@@ -89,9 +89,9 @@ To do this simply call make with this command
     make onelib
 
 which creates `libflook.a` in the top directory. With this library
-you only need to link to your own Lua library.
+you only need to link to flook and your Lua library installation.
 
-To link flook to your program you simply require
+To link flook to your program you require
 
     FLOOK_PATH  = /path/to/flook/parent
     FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
@@ -103,9 +103,9 @@ for linking the program you need `$(FLOOK_LIBS)` on the command line.
 
 #### Direct linking ####
 
-When [one step](#compiling-for-one-link) does not work.
+When [one step](#compiling-for-one-link) does not work, the following method is less restrictive on the commands used.
 
-In order to link properly to flook you can use this template (`Makefile`) for
+In order to link to flook you can use this template (`Makefile`) for
 include statements and library linking (note that you should _not_ switch the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
@@ -133,12 +133,23 @@ The communicating Lua code looks like this:
 @include exp_flook.lua
 
 
+## Contributions, issues and bugs ##
+
+I would advice any users to contribute as much feedback and/or PR to further maintain and expand this library.
+
+Please do not hesitate to contribute!
+
+If you find any bugs please form a [bug report][issue].
+
+If you have a fix please consider adding a [pull request][pr].
+
+
 ### Thanks ###
 
 First, I owe [Harald Klimach](https://bitbucket.org/haraldkl) a big thanks 
 for the creation of [aotus] for the Lua-Fortran embedment.
 
-Second, I thank James Spencer for help regarding the [aotus] API.
+Second, I thank [James Spencer](https://github.com/jsspencer) for help regarding the [aotus] API.
 
 Third, I thank [ESL] for hosting a workshop for me to participate 
 and create the initial release.
@@ -146,4 +157,5 @@ and create the initial release.
 [flook@git]: https://github.com/ElectronicStructureLibrary/flook
 [aotus]: https://bitbucket.org/haraldkl/aotus
 [ESL]: http://esl.cecam.org/
-
+[issue]: https://github.com/ElectronicStructureLibrary/flook/issues
+[pr]: https://github.com/ElectronicStructureLibrary/flook/pulls
