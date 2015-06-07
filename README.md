@@ -163,12 +163,12 @@ The communicating Lua code looks like this:
 
 ## Contributions, issues and bugs ##
 
-I would advice any users to contribute as much feedback and/or PR to further
+I would advice any users to contribute as much feedback and/or PRs to further
 maintain and expand this library.
 
 Please do not hesitate to contribute!
 
-If you find any bugs please form a [bug report][issue].
+If you find any bugs please form a [bug report/issue][issue].
 
 If you have a fix please consider adding a [pull request][pr].
 
