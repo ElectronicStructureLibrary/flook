@@ -25,7 +25,7 @@ make check
 if [ -z "$_old_arch" ]; then
     # the link should sustain,
     # it still links to .arch.make
-    continue
+    echo "do nothing" > /dev/null
 else
     rm arch.make
     mv $_old_arch arch.make
