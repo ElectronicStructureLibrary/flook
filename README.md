@@ -16,6 +16,8 @@ program.
 
 ## Usage ##
 
+The API documentation of flook resides at [documentation][flook-doc].
+
 Imagine you have a program which has 3 distinct places where interaction
 might occur:
 
@@ -26,7 +28,8 @@ might occur:
 	end program
 
 At each intermediate point one wishes to communicate with a scripting language.  
-flook lets you communicate fortran and Lua. For an elaborate example see [Examples](#examples).
+flook lets you communicate fortran and Lua.
+For an elaborate example see [Examples](#examples).
 
 ## Downloading and installation ##
 
@@ -43,12 +46,12 @@ To fetch all required files do this
 
 At this point you should see (_at least_) the following directories and files:
 
-    drwxr-xr-x 7 USER USER 4.0K Jun  5 17:57 aotus
-    -rw-r--r-- 1 USER USER 7.5K Jun  5 17:56 LICENSE
-    -rw-r--r-- 1 USER USER  667 Jun  5 17:56 Makefile
-    -rw-r--r-- 1 USER USER  298 Jun  5 17:56 README.md
-    drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 src
-    drwxr-xr-x 2 USER USER 4.0K Jun  5 17:56 test
+    drwxr-xr-x 7 USER GROUP 4.0K Jun  5 17:57 aotus
+    -rw-r--r-- 1 USER GROUP 7.5K Jun  5 17:56 LICENSE
+    -rw-r--r-- 1 USER GROUP  667 Jun  5 17:56 Makefile
+    -rw-r--r-- 1 USER GROUP  298 Jun  5 17:56 README.md
+    drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 src
+    drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 test
 
 To compile flook you need a minimal `arch.make` file.  
 The content of `arch.make`, which should be located in the top directory, can be this
@@ -68,6 +71,27 @@ minimal content (please correct tabulators to conform to `Makefile` standards):
 The `$(INC)` is needed for internal reasons, (sorry about the quick mock-up)...
 
 Type `make` and possibly `make check` to run the tests in the [test](test/) directory.
+
+Compiling the internal Lua package requires tweaking if you are using a different
+platform than `linux`.
+
+    PLATFORM = aix | bsd | c89 | freebsd | generic | linux | macosx | mingw | posix | solaris
+
+where the default is `linux`, if using `linux` supplying `PLATFORM` to
+the `arch.make` file is unnecessary.
+
+#### Lua ####
+
+[aotus] is packaged together with Lua 5.3.0 and enables the direct compilation of
+Lua and the fortran bindings. However, if Lua gets updated or you wish
+to control your Lua environment you can use your local Lua installation.
+
+By adding these flags to your arch.make
+
+    LUA_DIR = /path/to/lua/installation
+    INC += -I$(LUA_DIR)/include
+
+an external library for the Lua environment will be used.
 
 ### Linking ###
 
@@ -97,17 +121,19 @@ To link flook to your program the following can be used in a `Makefile`
     FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflookall -ldl
     FLOOK_INC   = -I$(FLOOK_PATH)/src
 
-For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
-for linking the program you need `$(FLOOK_LIBS)` on the command line.
+For the sources that you compile you need to add `$(FLOOK_INC)` to the command line,
+whilst for linking the program you need `$(FLOOK_LIBS)` on the command line.
 Note that `-ldl` is a requirement for the Lua library, and per-see is more
 difficult to incorporate. 
 
 #### Direct linking ####
 
-When [compiling for one link](#compiling-for-one-link) does not work, the following method is less restrictive on the commands used.
+When [compiling for one link](#compiling-for-one-link) does not work, the
+following method is less restrictive on the commands used.
 
 In order to link to flook you can use this template (`Makefile`) for
-include statements and library linking (note that you should _not_ switch the order of these statements):
+include statements and library linking (note that you should _not_ switch
+the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
     FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
@@ -116,8 +142,9 @@ include statements and library linking (note that you should _not_ switch the or
     FLOOK_LIBS += -L/path/to/lua/lib -llua -ldl
     FLOOK_INC   = -I$(FLOOK_PATH)/src
 
-For the sources that you compile you need to add `$(FLOOK_INC)` to the command line, whilst 
-for linking the program you need `$(FLOOK_LIBS)` on the command line.
+For the sources that you compile you need to add `$(FLOOK_INC)` to the
+command line, whilst for linking the program you need `$(FLOOK_LIBS)`
+on the command line.
 
 ## Examples ##
 
@@ -136,7 +163,8 @@ The communicating Lua code looks like this:
 
 ## Contributions, issues and bugs ##
 
-I would advice any users to contribute as much feedback and/or PR to further maintain and expand this library.
+I would advice any users to contribute as much feedback and/or PR to further
+maintain and expand this library.
 
 Please do not hesitate to contribute!
 
@@ -144,19 +172,29 @@ If you find any bugs please form a [bug report][issue].
 
 If you have a fix please consider adding a [pull request][pr].
 
+## License ##
+
+The flook license is [LGPL][lgpl], please see the LICENSE file.
 
 ### Thanks ###
 
 First, I owe [Harald Klimach](https://bitbucket.org/haraldkl) a big thanks 
 for the creation of [aotus] for the Lua-Fortran embedment.
 
-Second, I thank [James Spencer](https://github.com/jsspencer) for help regarding the [aotus] API.
+Second, I thank [James Spencer](https://github.com/jsspencer) for help
+regarding the [aotus] API.
 
 Third, I thank [ESL] for hosting a workshop for me to participate 
 and create the initial release.
 
+
+<!---
+Links to external and internal sites.
+-->
 [flook@git]: https://github.com/ElectronicStructureLibrary/flook
 [aotus]: https://bitbucket.org/haraldkl/aotus
 [ESL]: http://esl.cecam.org/
+[flook-doc]: http://esl.cecam.org/documentation/flook/master/
 [issue]: https://github.com/ElectronicStructureLibrary/flook/issues
 [pr]: https://github.com/ElectronicStructureLibrary/flook/pulls
+[lgpl]: http://www.gnu.org/licenses/lgpl.html
