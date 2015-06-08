@@ -106,13 +106,13 @@ However, two variants of linking is available.
 
 #### Compiling for one link ####
 
-flook can combine the libraries from 1. -- 4. into one library.
+flook can combine the libraries from 1. - 4. into one library.
 
 To do this simply call make with this command
 
     make liball
 
-which creates `libflook.a` in the top directory. With this library
+which creates `libflookall.a` in the top directory. With this library
 you only need to link to flook.
 
 To link flook to your program the following can be used in a `Makefile`
