@@ -239,6 +239,7 @@ module flook
   !! \param[inout] luaState the @lua @env to run file/code in
   !! \param[in] file @opt executes a `dofile(file)` in @lua
   !! \param[in] code @opt executes `code` in @lua
+  !! \param[out] error @opt error message from @lua (non-zero for error)
   public :: lua_run
   interface lua_run
      module procedure state_run_
@@ -637,17 +638,17 @@ contains
 
 
   !> @isee luaState::run
-  subroutine state_run_(lua,file,code)
+  subroutine state_run_(lua,file,code,error)
     type(luaState), intent(in) :: lua
     character(len=*), intent(in), optional :: file, code
+    integer, intent(out), optional :: error
 
-    integer :: err
     character(len=255) :: err_string
     if ( present(file) ) then
-       call open_config_file(lua%L, file, err, err_string)
+       call open_config_file(lua%L, file, error, ErrString=err_string)
     end if
     if ( present(code) ) then
-       call open_config_chunk(lua%L, code)
+       call open_config_chunk(lua%L, code, error)
     end if
   end subroutine state_run_
 
@@ -655,7 +656,7 @@ contains
   !> @isee luaState::close
   subroutine state_close_(lua)
     type(luaState), intent(inout) :: lua
-    if ( lua%initialized ) call flu_close(lua%L)
+    if ( lua%initialized ) call close_config(lua%L)
     lua%initialized = .false.
   end subroutine state_close_
 
