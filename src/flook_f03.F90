@@ -262,7 +262,8 @@ module flook
      !!
      !! \param[in] file @opt executes a `dofile(file)` in @lua
      !! \param[in] code @opt executes `code` in @lua
-     !! \param[out] error @opt error message from @lua (non-zero for error)
+     !! \param[out] error @opt error ID from @lua (non-zero for error)
+     !! \param[out] message @opt error message from @lua
      generic, public :: run => state_run_
 
      ! Interface for table creation

@@ -239,7 +239,8 @@ module flook
   !! \param[inout] luaState the @lua @env to run file/code in
   !! \param[in] file @opt executes a `dofile(file)` in @lua
   !! \param[in] code @opt executes `code` in @lua
-  !! \param[out] error @opt error message from @lua (non-zero for error)
+  !! \param[out] error @opt error ID from @lua (non-zero for error)
+  !! \param[out] message @opt error message from @lua
   public :: lua_run
   interface lua_run
      module procedure state_run_
