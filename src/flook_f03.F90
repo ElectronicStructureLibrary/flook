@@ -690,17 +690,17 @@ contains
 
 
   !> @isee luaState::run
-  subroutine state_run_(lua,file,code,error)
+  subroutine state_run_(lua,file,code, error, message)
     class(luaState), intent(in) :: lua
     character(len=*), intent(in), optional :: file, code
     integer, intent(out), optional :: error
+    character(len=*), intent(out), optional :: message
 
-    character(len=255) :: err_string
     if ( present(file) ) then
-       call open_config_file(lua%L, file, error, ErrString=err_string)
+       call open_config_file(lua%L, file, ErrCode=error, ErrString=message)
     end if
     if ( present(code) ) then
-       call open_config_chunk(lua%L, code, error)
+       call open_config_chunk(lua%L, code, ErrCode=error, ErrString=message)
     end if
   end subroutine state_run_
 
