@@ -1,4 +1,4 @@
 [submodule "aotus"]
 	path = aotus
-	url = https://github.com/zerothi/aotus.git
+	url = https://github.com/haraldkl/aotus.git
 	ignore = dirty
