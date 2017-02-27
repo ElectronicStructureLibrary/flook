@@ -1,0 +1,69 @@
+_SMEKA_project = 1
+
+# Contains specific default information for this
+# project
+
+# Step this version upon new versions
+PROJECT_MAJOR = 0
+PROJECT_MINOR = 6
+PROJECT_MICRO = 0
+PROJECT_VERSION = $(PROJECT_MAJOR).$(PROJECT_MINOR).$(PROJECT_MICRO)
+
+# These are constant default
+PROJECT_NAME = flook
+
+
+#### Whether the Object-Oriented module should be build
+OO ?= 0
+
+
+# We default to build both shared and the static
+# library.
+STATIC ?= 1
+SHARED ?= 0
+
+# Create the list of libraries
+FLOOK_LIB ?= flook$(LIB_SUFFIX)
+FLOOK_LIB_STATIC ?= lib$(FLOOK_LIB).a
+FLOOK_LIB_STATIC_ALL ?= lib$(FLOOK_LIB)all.a
+FLOOK_LIB_SHARED ?= lib$(FLOOK_LIB).so
+
+
+ifeq ($(STATIC),1)
+  LIBRARIES += $(FLOOK_LIB_STATIC)
+endif
+ifeq ($(SHARED),1)
+  LIBRARIES += $(FLOOK_LIB_SHARED)
+  # Forcefully denote that objects should have
+  # position independent code
+  # THIS IS A SMEKA SETTING
+  PIC = 1
+endif
+
+
+# Create custom installation of modules
+.PHONY: install-mod
+.NOTPARALLEL: install-mod
+smeka-install: install-mod
+install-mod: install-version
+ifneq ($(LIBRARIES),)
+install-mod:
+# This should only pass if one wishes to install the flook library as well
+	install -pm $(_OCT_rwrr) -t $(FMOD_DIR) *.mod
+endif
+
+
+.PHONY: doc
+doc:
+	doxygen doc/Doxyfile
+
+
+.PHONY: clean
+clean:
+	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED)
+
+
+
+# Local Variables:
+#  mode: makefile-gmake
+# End:
