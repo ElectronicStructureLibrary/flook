@@ -194,7 +194,7 @@ Links to external and internal sites.
 [flook@git]: https://github.com/ElectronicStructureLibrary/flook
 [aotus]: https://bitbucket.org/haraldkl/aotus
 [ESL]: http://esl.cecam.org/
-[flook-doc]: http://esl.cecam.org/documentation/flook/master/
+[flook-doc]: https://electronicstructurelibrary.github.io/flook/index.html
 [issue]: https://github.com/ElectronicStructureLibrary/flook/issues
 [pr]: https://github.com/ElectronicStructureLibrary/flook/pulls
 [lgpl]: http://www.gnu.org/licenses/lgpl.html
