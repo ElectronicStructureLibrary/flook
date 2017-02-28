@@ -5,7 +5,7 @@ _SMEKA_project = 1
 
 # Step this version upon new versions
 PROJECT_MAJOR = 0
-PROJECT_MINOR = 6
+PROJECT_MINOR = 7
 PROJECT_MICRO = 0
 PROJECT_VERSION = $(PROJECT_MAJOR).$(PROJECT_MINOR).$(PROJECT_MICRO)
 
@@ -53,6 +53,28 @@ install-mod:
 endif
 
 
+# Create distribution for releases
+.PHONY: dist-aotus dist-flook dist-assemble dist
+dist-aotus:
+	git submodule sync aotus
+	git submodule init aotus
+	git submodule update aotus
+	(cd aotus ; git archive --format=tar.gz --prefix aotus/ HEAD > ../aotus.tar.gz)
+
+dist-flook:
+	git archive --format=tar.gz --prefix flook-$(PROJECT_VERSION)/ HEAD > flook-$(PROJECT_VERSION).tar.gz
+
+dist-assemble: dist-aotus dist-flook
+	-rm -rf .tmp_dist
+	(mkdir .tmp_dist ; cd .tmp_dist ; \
+	tar xfz ../flook-$(PROJECT_VERSION).tar.gz ; cd flook-* ; \
+	tar xfz ../../aotus.tar.gz ; \
+	cd .. ; rm ../flook-$(PROJECT_VERSION).tar.gz ; \
+	tar cfz ../flook-$(PROJECT_VERSION).tar.gz flook-$(PROJECT_VERSION) ; \
+	rm -rf .tmp_dist ../aotus.tar.gz)
+
+dist: dist-assemble
+
 .PHONY: doc
 doc:
 	doxygen doc/Doxyfile
@@ -61,7 +83,6 @@ doc:
 .PHONY: clean
 clean:
 	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED)
-
 
 
 # Local Variables:
