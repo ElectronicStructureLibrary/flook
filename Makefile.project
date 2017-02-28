@@ -40,12 +40,23 @@ ifeq ($(SHARED),1)
   PIC = 1
 endif
 
+# Check if liball is in the target list, if so add flookall to libraries
+ifneq ("$(wildcard $(FLOOK_LIB_STATIC_ALL))","")
+ # found
+ LIBRARIES += $(FLOOK_LIB_STATIC_ALL)
+else
+ ifneq (,$(findstring liball,$(MAKECMDGOALS)))
+  # found
+  LIBRARIES += $(FLOOK_LIB_STATIC_ALL)
+ endif
+endif
+
 
 # Create custom installation of modules
 .PHONY: install-mod
 .NOTPARALLEL: install-mod
 smeka-install: install-mod
-install-mod: install-version
+install-mod: 
 ifneq ($(LIBRARIES),)
 install-mod:
 # This should only pass if one wishes to install the flook library as well
@@ -82,7 +93,7 @@ doc:
 
 .PHONY: clean
 clean:
-	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED)
+	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED) $(FLOOK_LIB_STATIC_ALL)
 
 
 # Local Variables:

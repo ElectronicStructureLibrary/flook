@@ -65,6 +65,7 @@ LINK := $(FC)
 # Define targets for libraries
 $(FLOOK_LIB_STATIC): $(OBJECTS)
 $(FLOOK_LIB_SHARED): $(OBJECTS)
+$(FLOOK_LIB_STATIC_ALL): $(OBJECTS)
 .PHONY: lib
 lib: $(LIBRARIES)
 
@@ -76,6 +77,7 @@ ifeq (,$(findstring aotus,$(LIBS)))
  $(OBJECTS): lib-aotus
  $(FLOOK_LIB_STATIC): | lib-aotus
  $(FLOOK_LIB_SHARED): | lib-aotus
+ $(FLOOK_LIB_STATIC_ALL): | lib-aotus
 
 # Add clean-target dependency
 clean: clean-aotus
