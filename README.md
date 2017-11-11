@@ -118,8 +118,8 @@ you only need to link to flook.
 To link flook to your program the following can be used in a `Makefile`
 
     FLOOK_PATH  = /path/to/flook/parent
-    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflookall -ldl
-    FLOOK_INC   = -I$(FLOOK_PATH)/src
+    FLOOK_LIBS  = -L$(FLOOK_PATH) -lflookall -ldl
+    FLOOK_INC   = -I$(FLOOK_PATH)
 
 For the sources that you compile you need to add `$(FLOOK_INC)` to the command line,
 whilst for linking the program you need `$(FLOOK_LIBS)` on the command line.
@@ -136,11 +136,10 @@ include statements and library linking (note that you should _not_ switch
 the order of these statements):
 
     FLOOK_PATH  = /path/to/flook/parent
-    FLOOK_LIBS  = -L$(FLOOK_PATH)/src -lflook
-    FLOOK_LIBS += -L$(FLOOK_PATH)/aotus/source -laotus
-    FLOOK_LIBS += -L$(FLOOK_PATH)/aotus/LuaFortran -lflu
+    FLOOK_LIBS  = -L$(FLOOK_PATH) -lflook
+    FLOOK_LIBS += -L$(FLOOK_PATH)/aotus/obj -laotus
     FLOOK_LIBS += -L/path/to/lua/lib -llua -ldl
-    FLOOK_INC   = -I$(FLOOK_PATH)/src
+    FLOOK_INC   = -I$(FLOOK_PATH)
 
 For the sources that you compile you need to add `$(FLOOK_INC)` to the
 command line, whilst for linking the program you need `$(FLOOK_LIBS)`
