@@ -25,6 +25,12 @@ include $(TOP_DIR)/$(SMEKA_DIR)/Makefile.smeka
 
 # SMEKAENDSETTINGS (DO NOT DELETE)
 
+ifdef PLATFORM
+_LUA_PLATFORM := $(PLATFORM)
+else
+_LUA_PLATFORM := linux
+endif
+
 
 # Define internal aotus library build
 .PHONY: prep-aotus lib-aotus clean-aotus
@@ -32,11 +38,13 @@ prep-aotus:
 ifdef SETUP
 	(mkdir -p aotus/obj ; cd aotus/obj ; \
 		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
+		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
 		echo "include ../../$(TOP_DIR)/aotus/Makefile" >> Makefile )
 
 else
 	(mkdir -p aotus/obj ; cd aotus/obj ; \
 		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
+		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
 		echo "include ../../$(TOP_DIR)/aotus/Makefile" >> Makefile )
 endif
 lib-aotus: prep-aotus
