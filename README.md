@@ -53,8 +53,8 @@ At this point you should see (_at least_) the following directories and files:
     drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 src
     drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 test
 
-To compile flook you need a minimal `arch.make` file.  
-The content of `arch.make`, which should be located in the top directory, can be this
+To compile flook you need a minimal `setup.make` file.  
+The content of `setup.make`, which should be located in the top directory, can be this
 minimal content (please correct tabulators to conform to `Makefile` standards):
 
     CC = gcc
@@ -78,7 +78,7 @@ platform than `linux`.
     PLATFORM = aix | bsd | c89 | freebsd | generic | linux | macosx | mingw | posix | solaris
 
 where the default is `linux`, if using `linux` supplying `PLATFORM` to
-the `arch.make` file is unnecessary.
+the `setup.make` file is unnecessary.
 
 #### Lua ####
 
@@ -86,7 +86,7 @@ the `arch.make` file is unnecessary.
 Lua and the fortran bindings. However, if Lua gets updated or you wish
 to control your Lua environment you can use your local Lua installation.
 
-By adding these flags to your arch.make
+By adding these flags to your `setup.make`
 
     LUA_DIR = /path/to/lua/installation
     INC += -I$(LUA_DIR)/include
