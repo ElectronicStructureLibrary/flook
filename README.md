@@ -173,7 +173,7 @@ If you have a fix please consider adding a [pull request][pr].
 
 ## License ##
 
-The flook license is [LGPL][lgpl], please see the LICENSE file.
+The flook license is [MPL-2.0][mpl-2], please see the LICENSE file.
 
 ### Thanks ###
 
@@ -196,4 +196,4 @@ Links to external and internal sites.
 [flook-doc]: https://electronicstructurelibrary.github.io/flook/index.html
 [issue]: https://github.com/ElectronicStructureLibrary/flook/issues
 [pr]: https://github.com/ElectronicStructureLibrary/flook/pulls
-[lgpl]: http://www.gnu.org/licenses/lgpl.html
+[mpl-2]: https://opensource.org/licenses/MPL-2.0

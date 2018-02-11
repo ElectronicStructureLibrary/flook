@@ -19,9 +19,9 @@
 !! @lua code at certains points in the @f pipeline.
 
 !> @author 
-!!  Nick Papior Andersen
+!!  Nick Papior
 
-!> @copyright LGPL
+!> @copyright MPL-2.0
 
 module flook
 
