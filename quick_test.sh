@@ -19,8 +19,8 @@ ln -s .setup.make setup.make
 
 # call make...
 make clean
-make
-make check
+make liball
+FLOOK_LIB="flookall -ldl -L." make check
 
 if [ -z "$_old_arch" ]; then
     # the link should sustain,
