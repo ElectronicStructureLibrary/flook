@@ -122,7 +122,7 @@ geom.__index = geom'
   call open_config_chunk(L, 'geom.update_atoms() geom:init()')
 
 
-  call open_config_file(L, 'passreturn.lua', err, err_string)
+  call open_config_file(L, 'tst_passreturn.lua', err, err_string)
   if ( err /= 0 ) print *,'Error: ',trim(err_string)
 
   call flu_close(L)

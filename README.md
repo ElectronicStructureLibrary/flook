@@ -150,14 +150,14 @@ on the command line.
 Several examples exists in the [test](test/) directory where one 
 is shown in the following example:
 
-@include exp_flook.f90
+@include tst_exp_flook.f90
 
 The above program is a fortran program which communicates with an embedded Lua
 environment. It communicates with Lua 6 times and allows retrieval of elements
 and changing the elements at each communication point.  
 The communicating Lua code looks like this:
 
-@include exp_flook.lua
+@include tst_exp_flook.lua
 
 
 ## Contributions, issues and bugs ##

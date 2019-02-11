@@ -105,25 +105,25 @@ geom.__index = geom'
   call print_a()
 
   ! Open new lua state.
-  call lua_init(lua)
+  call lua%init()
 
   ! Register some fortran function to a lua function call
 
-  call lua_register(lua,"update_atoms", array_size_pass)
-  call lua_register(lua,"get_atom_info", array_pass)
-  call lua_register(lua,"return_atom_info", array_return)
+  call lua%register("update_atoms", array_size_pass)
+  call lua%register("get_atom_info", array_pass)
+  call lua%register("return_atom_info", array_return)
 
   ! Add standard code to the parser
-  call lua_run(lua,code = fortran_static_lua)
-  call lua_run(lua,code = fortran_lua_crt_mat)
-  call lua_run(lua,code = fortran_lua_geom)
+  call lua%run(code = fortran_static_lua)
+  call lua%run(code = fortran_lua_crt_mat)
+  call lua%run(code = fortran_lua_geom)
   ! Updated number of atoms and initialize the geometry
   ! to be ready to be parsed
-  call lua_run(lua,code = 'geom.update_atoms() geom:init()')
+  call lua%run(code = 'geom.update_atoms() geom:init()')
 
-  call lua_run(lua,'passreturn.lua')
+  call lua%run('tst_passreturn.lua')
 
-  call lua_close(lua)
+  call lua%close()
 
   print '(/,a)','LUA parsed'
   call print_a()
@@ -146,15 +146,15 @@ contains
     type(luaTbl) :: tbl
 
     ! Copy the c-pointer to the lua-state
-    call lua_init(lua,state)
+    call lua%init(state)
 
     ! Open table named 
-    tbl = lua_table(lua,'geom')
+    tbl = lua%table('geom')
 
-    call lua_set(tbl,'size', na_u)
-    call lua_set(tbl,'tmp', 1.5_8)
+    call tbl%set('size', na_u)
+    call tbl%set('tmp', 1.5_8)
 
-    call lua_close(tbl)
+    call tbl%close()
 
     npush = 0
 
@@ -176,16 +176,16 @@ contains
     type(luaTbl) :: tbl
 
     ! Copy the c-pointer to the lua-state
-    call lua_init(lua,state)
+    call lua%init(state)
 
     ! Open table named 
-    tbl = lua_table(lua,'geom.xa')
+    tbl = lua%table('geom.xa')
 
     ! Within this table we pass the xa value
-    call lua_set(tbl,xa)
-    call lua_close_open(tbl,'fa')
-    call lua_set(tbl,fa)
-    call lua_close(tbl,.true.)
+    call tbl%set(xa)
+    call tbl%close_open('fa')
+    call tbl%set(fa)
+    call tbl%close(.true.)
 
     ! we have no return values
     npush = 0
@@ -208,18 +208,18 @@ contains
     type(luaTbl) :: tbl
 
     ! Copy the c-pointer to the lua-state
-    call lua_init(lua,state)
+    call lua%init(state)
 
     ! Open table named 
-    tbl = lua_table(lua,'geom')
+    tbl = lua%table('geom')
 
     ! Within this table we pass the xa value
-    call lua_open(tbl,'xa')
-    call lua_get(tbl,xa)
-    call lua_close(tbl)
-    call lua_get(tbl,'fa',fa)
+    call tbl%open('xa')
+    call tbl%get(xa)
+    call tbl%close()
+    call tbl%get('fa',fa)
     ! Ensure the entire table has been closed
-    call lua_close(tbl,.true.)
+    call tbl%close(.true.)
 
     ! we have no return values
     npush = 0

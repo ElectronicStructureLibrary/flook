@@ -35,20 +35,20 @@ struct.__index = struct'
   type(luaState) :: lua
 
   ! Open new lua state.
-  call lua_init(lua)
+  call lua%init()
 
   ! Register some fortran function to a lua function call
 
-  call lua_register(lua,"get_info", pass_info)
-  call lua_register(lua,"return_info", retrieve_info)
+  call lua%register("get_info", pass_info)
+  call lua%register("return_info", retrieve_info)
 
   ! Add standard code to the parser
-  call lua_run(lua,code = fortran_static_lua)
-  call lua_run(lua,code = fortran_lua_struct)
+  call lua%run(code = fortran_static_lua)
+  call lua%run(code = fortran_lua_struct)
 
-  call lua_run(lua,'tbl.lua')
+  call lua%run('tst_tbl.lua')
 
-  call lua_close(lua)
+  call lua%close()
 
   print '(/,a)','LUA parsed'
             
@@ -69,17 +69,16 @@ contains
 
     integer :: lvls
     ! Copy the c-pointer to the lua-state
-    call lua_init(lua,state)
+    call lua%init(state)
 
     ! Open table named 
-    tbl = lua_table(lua,'struct')
-    call lua_open(tbl,'test.tmp.a',lvls = lvls)
+    tbl = lua%table('struct')
+    call tbl%open('test.tmp.a',lvls = lvls)
     print*,'opened: ',lvls
-    call lua_set(tbl,'size', 2)
-    lvls = 2
-    call lua_close(tbl,lvls=lvls)
-    call lua_set(tbl,'a', 1.5)
-    call lua_close_tree(tbl)
+    call tbl%set('size', 2)
+    call tbl%close(lvls=2)
+    call tbl%set('a', 1.5)
+    call tbl%close_tree()
 
     ! we have no return values
     npush = 0
@@ -103,17 +102,16 @@ contains
     real :: tmp
 
     ! Copy the c-pointer to the lua-state
-    call lua_init(lua,state)
+    call lua%init(state)
 
     ! Open table named 
-    tbl = lua_table(lua,'struct.test.tmp.a')
-    call lua_get(tbl,'size', i)
+    tbl = lua%table('struct.test.tmp.a')
+    call tbl%get('size', i)
+    call tbl%close(lvls=2)
+    call tbl%get('a', tmp)
     print *, 'Size: ',i
-    i = 2
-    call lua_close(tbl,lvls=i)
-    call lua_get(tbl,'a', tmp)
     print *, 'tmp: ',tmp
-    call lua_close_tree(tbl)
+    call tbl%close_tree()
 
     ! we have no return values
     npush = 0

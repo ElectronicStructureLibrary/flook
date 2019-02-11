@@ -22,7 +22,7 @@ program main
   ! all functions that are directly called in the program.
   ! Needless to say you can create a single @lua function
   ! which will determine the path via a control parameter.
-  call lua_run(lua, 'exp_flook.lua' )
+  call lua_run(lua, 'tst_exp_flook.lua' )
 
   call lua_run(lua, code = 'pre_init()' )
   call initialize()

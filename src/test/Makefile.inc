@@ -1,35 +1,52 @@
 test_src_DIR = $(TOP_DIR)/src/test
 # Where to create the output of tests
-test_out_DIR = test
+VPATH := $(VPATH):$(test_src_DIR)
 
-src_TESTS += passreturn
-t_src_OBJECTS += passreturn.o
-$(test_out_DIR)/passreturn: $(test_COMMON_OBJECTS) $(test_out_DIR)/passreturn.o
-	$(FC) -o $@ $^ -l$(FLOOK_LIB) $(FFLAGS) $(INCLUDES) $(LDFLAGS)
+
+src_TESTS += tst_passreturn
+t_src_OBJECTS += tst_passreturn.o
+tst_passreturn: $(test_COMMON_OBJECTS) tst_passreturn.o
+	$(FC) -o $@ $^ -L. -l$(FLOOK_LIB)all $(FFLAGS) $(INCLUDES) $(LDFLAGS)
 	@echo "#### TEST -- running: $@" >> run_tests.sh
-	@echo $@ >> run_tests.sh
+	@echo "cp $(test_src_DIR)/tst_passreturn.lua ." >> run_tests.sh
+	@echo "./$@" >> run_tests.sh
 
-src_TESTS += tbl
-t_src_OBJECTS += tbl.o
-$(test_out_DIR)/tbl: $(test_COMMON_OBJECTS) $(test_out_DIR)/tbl.o
-	$(FC) -o $@ $^ -l$(FLOOK_LIB) $(FFLAGS) $(INCLUDES) $(LDFLAGS)
+src_TESTS += tst_tbl
+t_src_OBJECTS += tst_tbl.o
+tst_tbl: $(test_COMMON_OBJECTS) tst_tbl.o
+	$(FC) -o $@ $^ -L. -l$(FLOOK_LIB)all $(FFLAGS) $(INCLUDES) $(LDFLAGS)
 	@echo "#### TEST -- running: $@" >> run_tests.sh
-	@echo $@ >> run_tests.sh
+	@echo "cp $(test_src_DIR)/tst_tbl.lua ." >> run_tests.sh
+	@echo "./$@" >> run_tests.sh
 
-src_TESTS += exp_flook
-t_src_OBJECTS += exp_flook.o
-$(test_out_DIR)/exp_flook: $(test_COMMON_OBJECTS) $(test_out_DIR)/exp_flook.o
-	$(FC) -o $@ $^ -l$(FLOOK_LIB) $(FFLAGS) $(INCLUDES) $(LDFLAGS)
+src_TESTS += tst_exp_flook
+t_src_OBJECTS += tst_exp_flook.o
+tst_exp_flook: $(test_COMMON_OBJECTS) tst_exp_flook.o
+	$(FC) -o $@ $^ -L. -l$(FLOOK_LIB)all $(FFLAGS) $(INCLUDES) $(LDFLAGS)
 	@echo "#### TEST -- running: $@" >> run_tests.sh
-	@echo $@ >> run_tests.sh
+	@echo "cp $(test_src_DIR)/tst_exp_flook.lua ." >> run_tests.sh
+	@echo "./$@" >> run_tests.sh
 
-src_TESTS += aot_passreturn
-t_src_OBJECTS += aot_passreturn.o
-$(test_out_DIR)/aot_passreturn: $(test_COMMON_OBJECTS) $(test_out_DIR)/aot_passreturn.o
-	$(FC) -o $@ $^ -l$(FLOOK_LIB) $(FFLAGS) $(INCLUDES) $(LDFLAGS)
+src_TESTS += tst_aot_passreturn
+t_src_OBJECTS += tst_aot_passreturn.o
+tst_aot_passreturn: $(test_COMMON_OBJECTS) tst_aot_passreturn.o
+	$(FC) -o $@ $^ -L. -l$(FLOOK_LIB)all $(FFLAGS) $(INCLUDES) $(LDFLAGS)
 	@echo "#### TEST -- running: $@" >> run_tests.sh
-	@echo $@ >> run_tests.sh
+	@echo "./$@" >> run_tests.sh
 
+.PHONY: clean-test
+clean-test:
+	-rm -f $(src_TESTS) $(t_src_OBJECTS) run_tests.sh
+
+# Add clean-test to target
+clean: clean-test
+
+$(t_src_OBJECTS): | liball
+$(src_TESTS): | liball
+.PHONY: test check
+test: $(src_TESTS)
+	sh ./run_tests.sh
+check: test
 
 # Local Variables:
 #  mode: makefile-gmake

@@ -19,9 +19,8 @@ ln -s .setup.make setup.make
 
 # call make...
 make clean
-make
-make check
-
+rm -f run_tests.sh
+LDFLAGS="-ldl" make check
 if [ -z "$_old_arch" ]; then
     # the link should sustain,
     # it still links to .setup.make
