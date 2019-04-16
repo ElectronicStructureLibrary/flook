@@ -75,7 +75,7 @@ $(FLOOK_LIB_STATIC): $(OBJECTS)
 $(FLOOK_LIB_SHARED): $(OBJECTS)
 $(FLOOK_LIB_STATIC_ALL): $(OBJECTS)
 .PHONY: lib
-lib: $(LIBRARIES)
+lib: flook.inc $(LIBRARIES)
 
 
 # Figure out if the aotus library is linked manually.

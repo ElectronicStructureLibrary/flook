@@ -6,7 +6,7 @@ _SMEKA_project = 1
 # Step this version upon new versions
 PROJECT_MAJOR = 0
 PROJECT_MINOR = 7
-PROJECT_MICRO = 0
+PROJECT_MICRO = 1
 PROJECT_VERSION = $(PROJECT_MAJOR).$(PROJECT_MINOR).$(PROJECT_MICRO)
 
 # These are constant default
@@ -63,6 +63,10 @@ install-mod:
 	install -pm $(_OCT_rwrr) -t $(FMOD_DIR) *.mod
 endif
 
+.NOTPARALLEL: install-header
+smeka-install: install-header
+install-header: flook.inc
+	install -pm $(_OCT_rwrr) -t $(INC_DIR) flook.inc
 
 # Create distribution for releases
 .PHONY: dist-aotus dist-flook dist-assemble dist
@@ -93,7 +97,7 @@ doc:
 
 .PHONY: clean
 clean:
-	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED) $(FLOOK_LIB_STATIC_ALL)
+	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED) $(FLOOK_LIB_STATIC_ALL) flook.inc
 
 
 # Local Variables:
