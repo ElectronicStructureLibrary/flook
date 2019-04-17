@@ -28,7 +28,22 @@ include $(TOP_DIR)/$(SMEKA_DIR)/Makefile.smeka
 ifdef PLATFORM
 _LUA_PLATFORM := $(PLATFORM)
 else
+# Check SMEKA_uname_S for platform
+ifeq ($(SMEKA_uname_S),Linux)
 _LUA_PLATFORM := linux
+endif
+ifeq ($(SMEKA_uname_S),Darwin)
+_LUA_PLATFORM := macosx
+endif
+ifeq ($(SMEKA_uname_S),FreeBSD)
+_LUA_PLATFORM := freebsd
+endif
+ifeq ($(SMEKA_uname_S),OpenBSD)
+_LUA_PLATFORM := bsd
+endif
+ifeq ($(SMEKA_uname_S),SunOS)
+_LUA_PLATFORM := solaris
+endif
 endif
 
 
