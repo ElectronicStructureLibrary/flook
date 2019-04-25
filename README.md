@@ -77,8 +77,9 @@ platform than `linux`.
 
     PLATFORM = aix | bsd | c89 | freebsd | generic | linux | macosx | mingw | posix | solaris
 
-where the default is `linux`, if using `linux` supplying `PLATFORM` to
-the `setup.make` file is unnecessary.
+where the makefile system will try and guess the correct platform. However, if
+the build fails due to the Lua library, then please supply `PLATFORM` with the correct
+platform in your `setup.make` file.
 
 #### Lua ####
 
@@ -113,7 +114,7 @@ To do this simply call make with this command
     make liball
 
 which creates `libflookall.a` in the top directory. With this library
-you only need to link to flook.
+you only need to link one library.
 
 To link flook to your program the following can be used in a `Makefile`
 

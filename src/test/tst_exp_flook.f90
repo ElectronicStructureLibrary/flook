@@ -44,7 +44,6 @@ contains
   function script_set(state) result(nret)
     use, intrinsic :: iso_c_binding, only: c_ptr, c_int
     
-    ! Define the state
     type(c_ptr), value :: state
     ! Define the in/out
     integer(c_int) :: nret

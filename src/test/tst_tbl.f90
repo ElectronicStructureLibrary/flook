@@ -34,7 +34,7 @@ struct.__index = struct'
   ! the lua embedded state
   type(luaState) :: lua
 
-  ! Open new lua state.
+  ! Open new lua state
   call lua_init(lua)
 
   ! Register some fortran function to a lua function call

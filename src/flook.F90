@@ -3,7 +3,7 @@
 !> \defgroup fortran-95
 !!
 !! The @lib interface for fortran-95 standard.
-!! 
+!!
 !! @{
 
 !> Accomodates a generic interface for communicating data between an
@@ -18,7 +18,7 @@
 !! The library opens an embedded @lua @env and enables the user to call
 !! @lua code at certains points in the @f pipeline.
 
-!> @author 
+!> @author
 !!  Nick Papior
 
 !> @copyright MPL-2.0
@@ -59,7 +59,7 @@ module flook
   !! This lets you create several @lua @envs simulatenously
   !! and/or open close new/old ones, at will.
   !!
-  !! It provides several class procedures which enables 
+  !! It provides several class procedures which enables
   !! direct interaction with the @lua @env as well
   !! as the creation of a flook::luaTbl.
   !!
@@ -68,13 +68,13 @@ module flook
   !! it
   !! \code{.f90}
   !! type(luaState) :: lua
-  !! 
+  !!
   !! ! Create a new lua environment
   !! call lua_init(lua)
-  !! 
+  !!
   !! ! At this point you can interact with lua through
   !! ! the other procedures in the state.
-  !! 
+  !!
   !! ! Close lua, and create a new one (clears the lua stack
   !! ! for a fresh restart)
   !! call lua_init(lua)
@@ -86,13 +86,13 @@ module flook
   type :: luaState
 
      !> @cond SHOW_INSTANCE_VARIABLES
-     
+
      !> Reference to the underlying library controlling @lua.
      !! This data type is the communication layer to @lua.
      !! You should never need to use this.
      !!
      !! @internal data structure for retaining the @lua
-     !! @env in the state. It should only be used 
+     !! @env in the state. It should only be used
      !! internally in @lib.
      type(flu_State) :: L
 
@@ -100,7 +100,7 @@ module flook
      !!
      !! @internal data structure for retaining the status
      !! of the @env.
-     !! 
+     !!
      !! You can re-call `lua_init(luaState` on an open @lua @env
      !! which will close the current instance and re-open a new.
      logical :: initialized = .false.
@@ -109,18 +109,18 @@ module flook
 
   end type luaState
 
-  ! Here we define the interfaces for the 
+  ! Here we define the interfaces for the
   ! fortran model
-  !> Initialization of a new @lua @env. 
+  !> Initialization of a new @lua @env.
   !! Can be instantiated either by no arguments (creates a new @lua @env)
   !! or by passing a C-pointer which extracts the current @lua @env from
   !! an already running instance.
   !!
   !! Creates new @lua @envs by starting @lua.
-  !! 
-  !! If the luaState is an already opened @lua @env, it will be closed by an 
+  !!
+  !! If the luaState is an already opened @lua @env, it will be closed by an
   !! `call lua_close(luaState)`.
-  !! 
+  !!
   !! Then, a new @lua @env will be created and will be made available
   !! to interact with @lua.
   !!
@@ -147,7 +147,7 @@ module flook
   !> Register @f functions to be called directly from @lua.
   !!
   !! Allows registrering @f functions as callable functions in @lua.
-  !! 
+  !!
   !! Example:
   !! \code{.f90}
   !! function f(L_c) result(nret) bind(c)
@@ -175,13 +175,13 @@ module flook
   !!
   !! \param[inout] name the exposed function name in @lua
   !! \param[in] name the exposed function name in @lua
-  !! \param[in] func the @f function passed by pointer to be attached to 
+  !! \param[in] func the @f function passed by pointer to be attached to
   !!    the @lua @env by calling `name`
   public :: lua_register
   interface lua_register
      module procedure reg_func_
   end interface lua_register
-  
+
   !> Runs either code by `character(len=*)` or by reading a file.
   !!
   !! Run @lua code from either direct interaction, or by
@@ -198,7 +198,7 @@ module flook
   !! \code{.f90}
   !! type(luaState) :: lua
   !! call lua_init(lua)
-  !! 
+  !!
   !! ! Call initialization file called 'init_file.lua'
   !! call lua_run(lua, 'init_file.lua' )
   !!
@@ -221,7 +221,7 @@ module flook
   !! \code{.f90}
   !! type(luaState) :: lua
   !! character(len=512) :: line
-  !! do 
+  !! do
   !!   ! Read line
   !!   read(*,*) line
   !!   call lua_run(lua, code = line )
@@ -260,14 +260,14 @@ module flook
   !! \code{.f90}
   !! type(luaState) :: lua
   !! type(luaTbl) :: tbl
-  !! 
+  !!
   !! ! Create new lua env
   !! call lua_init(lua)
-  !! 
+  !!
   !! ! Create a table as a variable
   !! tbl = lua_table(lua,'main')
   !! ! Close it again
-  !! 
+  !!
   !! ! Create a nested table inside `main`
   !! call lua_open(tbl,'main.nest_one.nest_two')
   !!
@@ -276,7 +276,7 @@ module flook
   !!
   !! ! You can also do everything at one time
   !! tbl = lua_table(lua,'new.nest_one.nest_two')
-  !! 
+  !!
   !! \endcode
   !! The equivalent @lua code would look like:
   !! \code{.lua}
@@ -288,7 +288,7 @@ module flook
   !! \endcode
   !!
   !! \param[in] luaState the current @lua @env
-  !! \param[in] name @opt name of table to open, can be "." 
+  !! \param[in] name @opt name of table to open, can be "."
   !!    delimited as #lua_open
   !! \return luaTbl the table object to post-process
   public :: lua_table
@@ -305,15 +305,15 @@ module flook
   public :: luaTbl
   ! Create a type to contain a table.
   !> Handle for interacting with @lua tables.
-  !! 
+  !!
   !! @lua handle for a tables.
-  !! 
+  !!
   !! This type is a list construct which keeps track of
   !! the opened tree-structure in the @lua @env.
   !!
   !! One can open new tables on already tables to traverse
   !! a complex table of high depth.
-  !! 
+  !!
   !! The main used feature is the #open construct
   !! which opens a new table at the given point, which
   !! could be a nested table.
@@ -349,7 +349,7 @@ module flook
      integer :: h = LUA_TBL_UNDEFINED
 
      !> Handle for the parent @lua table
-     !! 
+     !!
      !! Handle for the parent @lua table which enables
      !! direct traversal.
      type(luaTbl), pointer :: p => null()
@@ -357,7 +357,7 @@ module flook
      !> The associated @lua instance
      !!
      !! A pointer to the parent @lua instance.
-     !! This enables one to pass tables as entire entities 
+     !! This enables one to pass tables as entire entities
      !! for the @lua state.
      type(luaState), pointer :: lua => null()
 
@@ -365,7 +365,7 @@ module flook
 
   end type luaTbl
 
-  
+
   !> Opens a table in the current table tree.
   !!
   !! If this object already has an open table
@@ -374,13 +374,13 @@ module flook
   !!
   !! This openening provides easy access to several
   !! nested tables using a "." notation.
-  !! Hence providing `lua_open(luaTbl,name)` with 
+  !! Hence providing `lua_open(luaTbl,name)` with
   !! value `main.nested.nested` a table
   !! will be created with this equivalent @lua code:
   !! \code{.lua}
   !! main = { nested = { nested } } }
   !! \endcode
-  !! 
+  !!
   !! By using the @opt keyword `lua_open(luaTbl,lvls=lvls)`
   !! one can retrieve how many levels was opened
   !! by #lua_open. This is handy when you want
@@ -393,7 +393,7 @@ module flook
   !! ! do operations
   !! call lua_close(luaTbl,lvls = lvls)
   !! \endcode
-  !! __Note__ the initialization of `lvls = 0`, this 
+  !! __Note__ the initialization of `lvls = 0`, this
   !! is needed so as to re-use the same operation
   !! for nested operation of the table, i.e.:
   !! \code{.f90}
@@ -408,7 +408,7 @@ module flook
   !! ! Finally return to the level at `lvls = 0`
   !! call lua_close(luaTbl,lvls = lvls)
   !! \endcode
-  !! 
+  !!
   !! \param[inout] luaTbl the current #luaTbl to open a new table in
   !! \param[in] name the table to be opened
   !! \param[inout] lvls @opt keep track of how many levels was actually opened
@@ -422,7 +422,7 @@ module flook
   !! This closes an open table which disables it from
   !! interaction using the handle `handle`.
   !!
-  !! As the luaTbl class is a _following_ data structure a close 
+  !! As the luaTbl class is a _following_ data structure a close
   !! will move the table handle to the parent table.
   !!
   !! Hence:
@@ -433,7 +433,7 @@ module flook
   !! will be retain the table handle at `main.nested`, where as
   !! call `call lua_close(luaTbl,tree = .true.)` will close all.
   !!
-  !! One can supply an integer `lvls` to specify the number 
+  !! One can supply an integer `lvls` to specify the number
   !! of levels that will be closed.
   !! If this number exceeds the number of available nested tables
   !! it will be equivalent to `tree = .true.`.
@@ -482,8 +482,8 @@ module flook
   !!
   !! Open or creates a @lua table to be post-processed in
   !! @f.
-  !! 
-  !! This function returns a table handle #luaTbl to do 
+  !!
+  !! This function returns a table handle #luaTbl to do
   !! operations within this table.
   !!
   !! If you supply a `name` it will open the table
@@ -512,17 +512,17 @@ module flook
   !! - __name__ based, where an initial #lua_open
   !!   is called to create, or retrieve a table by key before
   !!   storing the array in that table.
-  !!   
-  !!   __NOTE__: Currently this is only implemented using a character `key`, 
+  !!
+  !!   __NOTE__: Currently this is only implemented using a character `key`,
   !!     hence you cannot use positional entries in this method.
-  !! - __direct__ based, the currently opened table has been created by 
+  !! - __direct__ based, the currently opened table has been created by
   !!   the user and subsequent storage is directly in this table.
   !!   This is handy if you want to assign other information subsequently.
   !!
   !! \param[inout] luaTbl the table to interact in
   !! \param[in] name @opt this constitutes the __name__ based method
   !! \param[in] val the array to be stored, currently supported dimension and
-  !!     kinds are: scalars, and 1-2 D arrays.  
+  !!     kinds are: scalars, and 1-2 D arrays.
   !!     The current data types are:
   !!
   !!     - `character`, (no arrays of this data is allowed)
@@ -539,12 +539,56 @@ module flook
      module procedure open_set_s_1d_, open_set_s_2d_, open_set_d_1d_, open_set_d_2d_
   end interface lua_set
 
+  !> Stores pointers to data in @lua tables.
+  !!
+  !! Stores @f pointers in @lua tables by storing several related quantities
+  !! in the table.
+  !! Notably a table will be created at the position with the following entries:
+  !!
+  !! - `.size` which contains a table of dimension sizes
+  !! - `.ptr` which contains the actual C-pointer
+  !!
+  !! The @lua table passed can be expressed in two different
+  !! methods:
+  !! - __name__ based, where an initial #lua_open
+  !!   is called to create, or retrieve a table by key before
+  !!   storing the array in that table.
+  !!
+  !!   __NOTE__: Currently this is only implemented using a character `key`,
+  !!     hence you cannot use positional entries in this method.
+  !! - __direct__ based, the currently opened table has been created by
+  !!   the user and subsequent storage is directly in this table.
+  !!   This is handy if you want to assign other information subsequently.
+  !!
+  !!
+  !! __NOTE__: setting and fetching a pointer does not preserve bounds. Any
+  !!           returned pointer using `lua_get_ptr` will force bounds
+  !!           `1:size(...)` for all dimensions.
+  !!
+  !! \param[inout] luaTbl the table to interact in
+  !! \param[in] name @opt this constitutes the __name__ based method
+  !! \param[in] val the array to be stored as a pointer, currently supported dimension and
+  !!     kinds are: 1-2 D arrays.
+  !!     The current data types are:
+  !!
+  !!     - `logical`
+  !!     - `integer`
+  !!     - `real(kind(0.))`
+  !!     - `real(kind(0.d0))`
+  public :: lua_set_ptr
+  interface lua_set_ptr
+    module procedure set_ptr_b_1d_, set_ptr_b_2d_, open_set_ptr_b_1d_, open_set_ptr_b_2d_
+    module procedure set_ptr_i_1d_, set_ptr_i_2d_, open_set_ptr_i_1d_, open_set_ptr_i_2d_
+    module procedure set_ptr_s_1d_, set_ptr_s_2d_, open_set_ptr_s_1d_, open_set_ptr_s_2d_
+    module procedure set_ptr_d_1d_, set_ptr_d_2d_, open_set_ptr_d_1d_, open_set_ptr_d_2d_
+  end interface lua_set_ptr
+
 
   !> Retrieves values from @lua tables.
   !!
   !! Retrieves @lua tables, or entries, to @f arrays, or variables
-  !! direct indices and bounds.  
-  !! It will try and read in entries as provided by the 
+  !! direct indices and bounds.
+  !! It will try and read in entries as provided by the
   !! @f array from the equivalent @lua table.
   !!
   !! The @f variable/array passed can be expressed in two different
@@ -552,16 +596,16 @@ module flook
   !! - __name__ based, where an initial #lua_open
   !!   is retrieving the table by key before locating
   !!   array values from that table.
-  !!   
-  !!   __NOTE__: Currently this is only implemented using a character `key`, 
+  !!
+  !!   __NOTE__: Currently this is only implemented using a character `key`,
   !!     hence you cannot use positional entries in this method.
   !! - __direct__ based, the currently opened table has the variable/array
-  !!   directly stored. 
+  !!   directly stored.
   !!
   !! \param[inout] luaTbl the table to interact in
   !! \param[in] name @opt this constitutes the __name__ based method
-  !! \param[in] val the array to be retrieved, currently supported 
-  !!     dimension and kinds are: scalars, and 1-2 D arrays.  
+  !! \param[in] val the array to be retrieved, currently supported
+  !!     dimension and kinds are: scalars, and 1-2 D arrays.
   !!     The current data types are:
   !!
   !!     - `character`, (no arrays of this data is allowed)
@@ -577,6 +621,48 @@ module flook
      module procedure open_get_b_1d_, open_get_b_2d_, open_get_i_1d_, open_get_i_2d_
      module procedure open_get_s_1d_, open_get_s_2d_, open_get_d_1d_, open_get_d_2d_
   end interface lua_get
+
+  !> Retrieve pointers from @lua tables.
+  !!
+  !! Retrieves pointers stored using `lua_set_ptr`.
+  !! The data will be fetched from the current entries:
+  !!
+  !! - `.size` containing the dimensions
+  !! - `.ptr` containing the actual C-pointer
+  !!
+  !! Retrieves @lua tables, or entries, to @f arrays, or variables
+  !! direct indices and bounds.
+  !! It will try and read in entries as provided by the
+  !! @f array from the equivalent @lua table.
+  !!
+  !! The @f variable/array passed can be expressed in two different
+  !! methods:
+  !! - __name__ based, where an initial #lua_open
+  !!   is retrieving the table by key before locating
+  !!   array values from that table.
+  !!
+  !!   __NOTE__: Currently this is only implemented using a character `key`,
+  !!     hence you cannot use positional entries in this method.
+  !! - __direct__ based, the currently opened table has the variable/array
+  !!   directly stored.
+  !!
+  !! \param[inout] luaTbl the table to interact in
+  !! \param[in] name @opt this constitutes the __name__ based method
+  !! \param[in] val the pointer to be retrieved, currently supported
+  !!     dimension and kinds are: 1D and 2D arrays.
+  !!     The current data types are:
+  !!
+  !!     - `logical`
+  !!     - `integer`
+  !!     - `real(kind(0.))`
+  !!     - `real(kind(0.d0))`
+  public :: lua_get_ptr
+  interface lua_get_ptr
+    module procedure get_ptr_b_1d_, get_ptr_b_2d_, open_get_ptr_b_1d_, open_get_ptr_b_2d_
+    module procedure get_ptr_i_1d_, get_ptr_i_2d_, open_get_ptr_i_1d_, open_get_ptr_i_2d_
+    module procedure get_ptr_s_1d_, get_ptr_s_2d_, open_get_ptr_s_1d_, open_get_ptr_s_2d_
+    module procedure get_ptr_d_1d_, get_ptr_d_2d_, open_get_ptr_d_1d_, open_get_ptr_d_2d_
+  end interface lua_get_ptr
 
   public :: len
   !> Length of a table
@@ -629,7 +715,7 @@ contains
     abstract interface
        function lua_function(s) result(val) bind(c)
          use, intrinsic :: iso_c_binding
-         integer(c_int) :: val 
+         integer(c_int) :: val
          type(c_ptr), value :: s
        end function lua_Function
     end interface
@@ -644,7 +730,7 @@ contains
     character(len=*), intent(in), optional :: file, code
     integer, intent(out), optional :: error
     character(len=*), intent(out), optional :: message
-    
+
     if ( present(file) ) then
        call open_config_file(lua%L, file, ErrCode=error, ErrString=message)
     end if
@@ -667,7 +753,7 @@ contains
     type(luaState), intent(inout), target :: lua
     character(len=*), intent(in) :: name
     type(luaTbl) :: tbl
-    ! Create the 
+
     tbl%lua => lua
     ! nullify the parent (the user shall assure it is closed)
     nullify(tbl%p)
@@ -675,7 +761,7 @@ contains
 
     ! Create a new table
     call lua_open(tbl,name)
-    
+
   end function state_tbl_
 
   !> @isee luaState::table
@@ -721,7 +807,7 @@ contains
     end if
 
     if ( tbl%h /= LUA_TBL_UNDEFINED ) then
-       ! We are creating a tree, 
+       ! We are creating a tree,
        ! we have to trick the table
        ! to create a linked list.
 
@@ -796,7 +882,7 @@ contains
     tbl%h = h
     if ( present(lvls) ) lvls = lvls - 1
 
-    ! Figure out if we should continue close 
+    ! Figure out if we should continue close
     ! tables
     if ( ltree ) then
        call lua_close(tbl,.true.)
@@ -829,7 +915,7 @@ contains
     integer :: len
     len = aot_table_length(tbl%lua%L,tbl%h)
   end function tbl_len_
-  
+
   !> @isee luaTbl::create
   function tbl_create_str_(tbl,name) result(tbl_new)
     type(luaTbl), intent(inout), target :: tbl
@@ -853,7 +939,7 @@ contains
     else
        tbl_new%h = tbl_create__(tbl%lua, key = trim(name) )
     end if
-    
+
   end function tbl_create_str_
 
   !> @isee luaTbl::create
@@ -872,7 +958,7 @@ contains
     else
        tbl_new%h = tbl_create__(tbl%lua, key = pos )
     end if
-    
+
   end function tbl_create_int_
 
   !> @isee luaTbl::create
@@ -890,7 +976,7 @@ contains
     else
        tbl_new%h = tbl_create__(tbl%lua)
     end if
-    
+
   end function tbl_create_
 
   !> @endcond
@@ -1208,6 +1294,420 @@ contains
 
   !#######  END DOUBLE     ###############
 
+
+  !#######   POINTERS    ###############
+
+  !#######      LOGICAL     ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_b_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    logical, intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: i, s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_b_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_b_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_b_1d_
+
+  ! Documentation @ interface
+  subroutine set_ptr_b_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    logical, intent(in), target :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: i, s(2)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_b_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_b_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, intent(in), target :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_b_2d_
+
+  !#######  END LOGICAL     ###############
+
+  !#######      INTEGER     ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_i_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer, intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: i, s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_i_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_i_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_i_1d_
+
+  ! Documentation @ interface
+  subroutine set_ptr_i_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer, intent(in), target :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: i, s(2)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_i_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_i_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, intent(in), target :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_i_2d_
+
+  !#######  END INTEGER     ###############
+
+  !#######      REAL     ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_s_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r4b), intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: i, s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_s_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_s_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_s_1d_
+
+  ! Documentation @ interface
+  subroutine set_ptr_s_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r4b), intent(in), target :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: i, s(2)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_s_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_s_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), intent(in), target :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_s_2d_
+
+  !#######  END REAL     ###############
+
+  !#######      DOUBLE     ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_d_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r8b), intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: i, s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_d_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_d_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_d_1d_
+
+  ! Documentation @ interface
+  subroutine set_ptr_d_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r8b), intent(in), target :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: i, s(2)
+    s(:) = size(val)
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_d_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_d_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), intent(in), target :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_d_2d_
+
+  !#######  END DOUBLE     ###############
+
+
+  !#######      LOGICAL       ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_b_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    logical, pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_b_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_b_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_b_1d_
+
+  ! Documentation @ interface
+  subroutine get_ptr_b_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    logical, pointer :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: err, s(2)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_b_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_b_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    logical, pointer :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_b_2d_
+
+  !#######  END LOGICAL       ###############
+
+  !#######      INTEGER       ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_i_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer, pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_i_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_i_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_i_1d_
+
+  ! Documentation @ interface
+  subroutine get_ptr_i_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer, pointer :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: err, s(2)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_i_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_i_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer, pointer :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_i_2d_
+
+  !#######  END INTEGER       ###############
+
+  !#######      REAL       ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_s_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r4b), pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_s_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_s_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_s_1d_
+
+  ! Documentation @ interface
+  subroutine get_ptr_s_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r4b), pointer :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: err, s(2)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_s_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_s_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r4b), pointer :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_s_2d_
+
+  !#######  END REAL       ###############
+
+  !#######      DOUBLE       ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_d_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r8b), pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_d_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_d_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_d_1d_
+
+  ! Documentation @ interface
+  subroutine get_ptr_d_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    real(r8b), pointer :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: err, s(2)
+    call lua_get(tbl, 'size', s)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_d_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_d_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    real(r8b), pointer :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_d_2d_
+
+  !#######  END DOUBLE       ###############
+
+
+  !###### END POINTER ################
 
   ! get and set character
   subroutine get_s_(tbl,name,val)

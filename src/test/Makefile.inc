@@ -19,6 +19,13 @@ tst_tbl: $(test_COMMON_OBJECTS) tst_tbl.o
 	@echo "cp $(test_src_DIR)/tst_tbl.lua ." >> run_tests.sh
 	@echo "./$@" >> run_tests.sh
 
+src_TESTS += tst_tbl_ptr
+t_src_OBJECTS += tst_tbl_ptr.o
+tst_tbl_ptr: $(test_COMMON_OBJECTS) tst_tbl_ptr.o
+	$(FC) -o $@ $^ -L. -l$(FLOOK_LIB)all $(FFLAGS) $(INCLUDES) $(LDFLAGS)
+	@echo "#### TEST -- running: $@" >> run_tests.sh
+	@echo "./$@" >> run_tests.sh
+
 src_TESTS += tst_exp_flook
 t_src_OBJECTS += tst_exp_flook.o
 tst_exp_flook: $(test_COMMON_OBJECTS) tst_exp_flook.o
