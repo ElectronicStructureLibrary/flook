@@ -1,6 +1,6 @@
 
 # Define variables for internal Lua source code
-EXTERNAL_LUA_V = 5.3.4
+EXTERNAL_LUA_V = 5.3.5
 # Default platform
 PLATFORM ?= linux
 

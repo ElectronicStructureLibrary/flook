@@ -54,13 +54,13 @@ ifdef SETUP
 	(mkdir -p aotus/obj ; cd aotus/obj ; \
 		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
 		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
-		echo "include ../../$(TOP_DIR)/aotus/Makefile" >> Makefile )
+		echo "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
 
 else
 	(mkdir -p aotus/obj ; cd aotus/obj ; \
 		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
 		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
-		echo "include ../../$(TOP_DIR)/aotus/Makefile" >> Makefile )
+		echo "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
 endif
 lib-aotus: prep-aotus
 ifdef SETUP
