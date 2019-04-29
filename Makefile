@@ -115,7 +115,7 @@ endif
 .PHONY: liball
 liball: $(FLOOK_LIB_STATIC)
 	(mkdir -p .tmp_link ; rm -f $(FLOOK_LIB_STATIC_ALL) ; cd .tmp_link ; \
-	$(AR) x ../aotus/obj/external/lua-5.3.4/src/liblua.a ; \
+	$(AR) x ../aotus/obj/external/lua-5.3.5/src/liblua.a ; \
 	$(AR) x ../aotus/obj/libaotus.a ; \
 	$(AR) x ../$(FLOOK_LIB_STATIC) ; \
 	$(AR) r ../$(FLOOK_LIB_STATIC_ALL) *.o ; \

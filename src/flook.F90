@@ -545,6 +545,7 @@ module flook
   !! in the table.
   !! Notably a table will be created at the position with the following entries:
   !!
+  !! - `.type` which contains the string defining the C-type (except logical)
   !! - `.size` which contains a table of dimension sizes
   !! - `.ptr` which contains the actual C-pointer
   !!
@@ -989,6 +990,24 @@ contains
 
   !> @cond SHOW_PRIVATE
 
+
+  ! Reverse an integer list
+  ! Only used for pointers
+  pure subroutine reverse_(list)
+    integer, intent(inout) :: list(:)
+    integer :: i, N, item
+
+    N = size(list)
+
+    do i = 1, N / 2
+      item = list(i)
+      list(i) = list(N+1-i)
+      list(N+1-i) = item
+    end do
+
+  end subroutine reverse_
+
+
   ! Documentation @ interface
   function tbl_create_by_handle_key__(lua,parent,key) result(handle)
     type(luaState), intent(inout) :: lua
@@ -1034,7 +1053,7 @@ contains
   subroutine set_s_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    character(len=*), intent(inout) :: val
+    character(len=*), intent(in) :: val
     call aot_table_set_val(val,tbl%lua%L,thandle=tbl%h, key = name)
   end subroutine set_s_
 
@@ -1306,6 +1325,7 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(1)
     s(:) = size(val)
+    !call lua_set(tbl, 'type', 'logical')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1330,6 +1350,8 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(2)
     s(:) = size(val)
+    call reverse_(s)
+    !call lua_set(tbl, 'type', 'logical')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1358,6 +1380,7 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(1)
     s(:) = size(val)
+    call lua_set(tbl, 'type', 'int')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1382,6 +1405,8 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(2)
     s(:) = size(val)
+    call reverse_(s)
+    call lua_set(tbl, 'type', 'int')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1410,6 +1435,7 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(1)
     s(:) = size(val)
+    call lua_set(tbl, 'type', 'float')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1434,6 +1460,8 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(2)
     s(:) = size(val)
+    call reverse_(s)
+    call lua_set(tbl, 'type', 'float')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1462,6 +1490,7 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(1)
     s(:) = size(val)
+    call lua_set(tbl, 'type', 'double')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1486,6 +1515,8 @@ contains
     type(c_ptr) :: ptr
     integer :: i, s(2)
     s(:) = size(val)
+    call reverse_(s)
+    call lua_set(tbl, 'type', 'double')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1515,6 +1546,7 @@ contains
     type(c_ptr) :: ptr
     integer :: err, s(1)
     call lua_get(tbl, 'size', s)
+    !call lua_get(tbl, 'type', ...)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_b_1d_
@@ -1538,6 +1570,8 @@ contains
     type(c_ptr) :: ptr
     integer :: err, s(2)
     call lua_get(tbl, 'size', s)
+    call reverse_(s)
+    !call lua_get(tbl, 'type', ...)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_b_2d_
@@ -1564,7 +1598,9 @@ contains
     integer, pointer :: val(:)
     type(c_ptr) :: ptr
     integer :: err, s(1)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_i_1d_
@@ -1587,7 +1623,10 @@ contains
     integer, pointer :: val(:,:)
     type(c_ptr) :: ptr
     integer :: err, s(2)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call reverse_(s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_i_2d_
@@ -1614,7 +1653,9 @@ contains
     real(r4b), pointer :: val(:)
     type(c_ptr) :: ptr
     integer :: err, s(1)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_s_1d_
@@ -1637,7 +1678,10 @@ contains
     real(r4b), pointer :: val(:,:)
     type(c_ptr) :: ptr
     integer :: err, s(2)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call reverse_(s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_s_2d_
@@ -1664,7 +1708,9 @@ contains
     real(r8b), pointer :: val(:)
     type(c_ptr) :: ptr
     integer :: err, s(1)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_d_1d_
@@ -1687,7 +1733,10 @@ contains
     real(r8b), pointer :: val(:,:)
     type(c_ptr) :: ptr
     integer :: err, s(2)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
+    call reverse_(s)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_d_2d_
