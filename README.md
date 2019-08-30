@@ -33,6 +33,10 @@ For an elaborate example see [Examples](#examples).
 
 ## Downloading and installation ##
 
+flook is part of the [ESL-bundle](https://gitlab.com/ElectronicStructureLibrary/esl-bundle)
+which allows easy installation along side many other libraries that may also be required.  
+For manual installation, please read on.
+
 Installing flook requires you to first fetch the library which is currently
 hosted at [github](https://github.com/) at [flook@git].
 

@@ -1,0 +1,14 @@
+prefix=@PREFIX@
+exec_prefix=${prefix}
+bindir=@BIN_DIR@
+includedir=@INC_DIR@
+libdir=@LIB_DIR@
+
+Name: @PROJECT_NAME@
+Description: Fortran-Lua hook library to control flow from scripting language.
+Version: @PROJECT_VERSION@
+URL: https://github.com/ElectronicStructureLibrary/flook
+Cflags: -I${includedir}
+Libs.private: -ldl
+Libs: -L${libdir} -lflookall
+
