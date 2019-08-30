@@ -60,13 +60,13 @@ install-mod:
 ifneq ($(LIBRARIES),)
 install-mod:
 # This should only pass if one wishes to install the flook library as well
-	install -pm $(_OCT_rwrr) -t $(FMOD_DIR) *.mod
+	$(INSTALL) -pm $(_OCT_rwrr) -t $(DESTDIR)$(FMOD_DIR) *.mod
 endif
 
 .NOTPARALLEL: install-header
 smeka-install: install-header
 install-header: flook.inc
-	install -pm $(_OCT_rwrr) -t $(INC_DIR) flook.inc
+	$(INSTALL) -pm $(_OCT_rwrr) -t $(DESTDIR)$(INC_DIR) flook.inc
 
 # Create distribution for releases
 .PHONY: dist-aotus dist-flook dist-assemble dist
@@ -80,13 +80,13 @@ dist-flook:
 	git archive --format=tar.gz --prefix flook-$(PROJECT_VERSION)/ HEAD > flook-$(PROJECT_VERSION).tar.gz
 
 dist-assemble: dist-aotus dist-flook
-	-rm -rf .tmp_dist
+	-$(RM) $(RM_FLAG_FORCE) $(RM_FLAG_RECURSE) .tmp_dist
 	(mkdir .tmp_dist ; cd .tmp_dist ; \
 	tar xfz ../flook-$(PROJECT_VERSION).tar.gz ; cd flook-* ; \
 	tar xfz ../../aotus.tar.gz ; \
-	cd .. ; rm ../flook-$(PROJECT_VERSION).tar.gz ; \
+	cd .. ; $(RM) ../flook-$(PROJECT_VERSION).tar.gz ; \
 	tar cfz ../flook-$(PROJECT_VERSION).tar.gz flook-$(PROJECT_VERSION) ; \
-	rm -rf .tmp_dist ../aotus.tar.gz)
+	$(RM) $(RM_FLAG_FORCE) $(RM_FLAG_RECURSE) .tmp_dist ../aotus.tar.gz)
 
 dist: dist-assemble
 
@@ -97,7 +97,7 @@ doc:
 
 .PHONY: clean
 clean:
-	-rm -f $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED) $(FLOOK_LIB_STATIC_ALL) flook.inc
+	-$(RM) $(RM_FLAG_FORCE) $(FLOOK_LIB_STATIC) $(FLOOK_LIB_SHARED) $(FLOOK_LIB_STATIC_ALL) flook.inc
 
 
 # Local Variables:
