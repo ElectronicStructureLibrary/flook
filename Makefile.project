@@ -60,13 +60,13 @@ install-mod:
 ifneq ($(LIBRARIES),)
 install-mod:
 # This should only pass if one wishes to install the flook library as well
-	$(INSTALL) -pm $(_OCT_rwrr) -t $(DESTDIR)$(FMOD_DIR) *.mod
+	$(INSTALL) -m $(_OCT_rwrr) -t $(DESTDIR)$(FMOD_DIR) *.mod
 endif
 
 .NOTPARALLEL: install-header
 smeka-install: install-header
 install-header: flook.inc
-	$(INSTALL) -pm $(_OCT_rwrr) -t $(DESTDIR)$(INC_DIR) flook.inc
+	$(INSTALL) -m $(_OCT_rwrr) -t $(DESTDIR)$(INC_DIR) flook.inc
 
 # Create distribution for releases
 .PHONY: dist-aotus dist-flook dist-assemble dist

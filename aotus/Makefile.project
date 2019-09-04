@@ -46,7 +46,7 @@ install-mod: install-version
 install-mod:
 ifneq ($(LIBRARIES),)
 # This should only pass if one wishes to install the aotus library as well
-	install -pm $(_OCT_rwrr) -t $(FMOD_DIR) *.mod
+	install -m $(_OCT_rwrr) -t $(FMOD_DIR) *.mod
 endif
 
 
