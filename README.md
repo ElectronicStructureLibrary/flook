@@ -43,9 +43,6 @@ hosted at [github](https://github.com/) at [flook@git].
 To fetch all required files do this
 
 	git clone https://github.com/ElectronicStructureLibrary/flook.git
-    cd flook
-    git submodule init
-    git submodule update
     ls -l
 
 At this point you should see (_at least_) the following directories and files:
