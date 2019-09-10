@@ -51,16 +51,16 @@ endif
 .PHONY: prep-aotus lib-aotus clean-aotus
 prep-aotus:
 ifdef SETUP
-	(mkdir -p aotus/obj ; cd aotus/obj ; \
-		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
-		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
-		echo "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
+	($(MKDIR) $(MKDIR_FLAG_PARENT) aotus/obj ; cd aotus/obj ; \
+		$(ECHO) "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
+		$(ECHO) "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
+		$(ECHO) "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
 
 else
-	(mkdir -p aotus/obj ; cd aotus/obj ; \
-		echo "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
-		echo "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
-		echo "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
+	($(MKDIR) $(MKDIR_FLAG_PARENT) aotus/obj ; cd aotus/obj ; \
+		$(ECHO) "TOP_DIR =../../$(TOP_DIR)/aotus" > Makefile ; \
+		$(ECHO) "PLATFORM = $(_LUA_PLATFORM)" >> Makefile ; \
+		$(ECHO) "include ../../$(TOP_DIR)/aotus/Makefile.smeka" >> Makefile )
 endif
 lib-aotus: prep-aotus
 ifdef SETUP
@@ -114,12 +114,12 @@ endif
 #  liblua.a libaotus.a libflu.a libflook.a
 .PHONY: liball
 liball: $(FLOOK_LIB_STATIC)
-	(mkdir -p .tmp_link ; rm -f $(FLOOK_LIB_STATIC_ALL) ; cd .tmp_link ; \
+	($(MKDIR) $(MKDIR_FLAG_PARENT) .tmp_link ; $(RM) $(RM_FLAG_FORCE) $(FLOOK_LIB_STATIC_ALL) ; cd .tmp_link ; \
 	$(AR) x ../aotus/obj/external/lua-5.3.5/src/liblua.a ; \
 	$(AR) x ../aotus/obj/libaotus.a ; \
 	$(AR) x ../$(FLOOK_LIB_STATIC) ; \
 	$(AR) r ../$(FLOOK_LIB_STATIC_ALL) *.o ; \
-	cd ../ ; rm -rf .tmp_link)
+	cd ../ ; $(RM) $(RM_FLAG_FORCE) $(RM_FLAG_RECURSE) .tmp_link)
 	$(RANLIB) $(FLOOK_LIB_STATIC_ALL)
 
 # Include the makefile in the test source directories:

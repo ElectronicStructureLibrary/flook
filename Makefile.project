@@ -81,7 +81,7 @@ dist-flook:
 
 dist-assemble: dist-aotus dist-flook
 	-$(RM) $(RM_FLAG_FORCE) $(RM_FLAG_RECURSE) .tmp_dist
-	(mkdir .tmp_dist ; cd .tmp_dist ; \
+	($(MKDIR) .tmp_dist ; cd .tmp_dist ; \
 	tar xfz ../flook-$(PROJECT_VERSION).tar.gz ; cd flook-* ; \
 	tar xfz ../../aotus.tar.gz ; \
 	cd .. ; $(RM) ../flook-$(PROJECT_VERSION).tar.gz ; \

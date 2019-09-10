@@ -11,13 +11,13 @@ else
 endif
 
 flook.inc:
-	@echo "#ifndef _FLOOK_INCLUDE_DEFINED" > $@
-	@echo "#define _FLOOK_INCLUDE_DEFINED" >> $@
-	@echo "#define _FLOOK_MAJOR_ $(PROJECT_MAJOR)" >> $@
-	@echo "#define _FLOOK_MINOR_ $(PROJECT_MINOR)" >> $@
-	@echo "#define _FLOOK_MICRO_ $(PROJECT_MICRO)" >> $@
-	@echo "#define _FLOOK_VERSION_ $(PROJECT_VERSION)" >> $@
-	@echo "#endif" >> $@
+	@$(ECHO) "#ifndef _FLOOK_INCLUDE_DEFINED" > $@
+	@$(ECHO) "#define _FLOOK_INCLUDE_DEFINED" >> $@
+	@$(ECHO) "#define _FLOOK_MAJOR_ $(PROJECT_MAJOR)" >> $@
+	@$(ECHO) "#define _FLOOK_MINOR_ $(PROJECT_MINOR)" >> $@
+	@$(ECHO) "#define _FLOOK_MICRO_ $(PROJECT_MICRO)" >> $@
+	@$(ECHO) "#define _FLOOK_VERSION_ $(PROJECT_VERSION)" >> $@
+	@$(ECHO) "#endif" >> $@
 
 # Define objects that needs compilation
 src_SOURCES = $(patsubst %.o, %.f90, $(src_OBJECTS))
@@ -33,9 +33,9 @@ OBJECTS += $(src_OBJECTS)
 
 .PHONY: clean-src
 clean-src:
-	-rm -f $(src_FPP_SOURCES)
-	-rm -f $(src_OBJECTS)
-	-rm -f *.mod flook.inc
+	-$(RM) $(RM_FLAG_FORCE) $(src_FPP_SOURCES)
+	-$(RM) $(RM_FLAG_FORCE) $(src_OBJECTS)
+	-$(RM) $(RM_FLAG_FORCE) *.mod flook.inc
 
 clean: clean-src
 
