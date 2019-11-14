@@ -52,7 +52,6 @@ At this point you should see (_at least_) the following directories and files:
     -rw-r--r-- 1 USER GROUP  667 Jun  5 17:56 Makefile
     -rw-r--r-- 1 USER GROUP  298 Jun  5 17:56 README.md
     drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 src
-    drwxr-xr-x 2 USER GROUP 4.0K Jun  5 17:56 test
 
 To compile flook you need a minimal `setup.make` file.  
 The content of `setup.make`, which should be located in the top directory, can be this
@@ -71,7 +70,7 @@ minimal content (please correct tabulators to conform to `Makefile` standards):
 
 The `$(INC)` is needed for internal reasons, (sorry about the quick mock-up)...
 
-Type `make` and possibly `make check` to run the tests in the [test](test/) directory.
+Type `make` and possibly `make check` to run the tests in the [src/test](src/test/) directory.
 
 Compiling the internal Lua package requires tweaking if you are using a different
 platform than `linux`.
@@ -149,17 +148,17 @@ on the command line.
 
 ## Examples ##
 
-Several examples exists in the [test](test/) directory where one 
+Several examples exists in the [src/test](src/test/) directory where one
 is shown in the following example:
 
-@include tst_exp_flook.f90
+@include src/test/tst_exp_flook.f90
 
 The above program is a fortran program which communicates with an embedded Lua
 environment. It communicates with Lua 6 times and allows retrieval of elements
 and changing the elements at each communication point.  
 The communicating Lua code looks like this:
 
-@include tst_exp_flook.lua
+@include src/test/tst_exp_flook.lua
 
 
 ## Contributions, issues and bugs ##
