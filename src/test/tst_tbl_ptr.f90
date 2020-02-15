@@ -36,7 +36,12 @@ program main
 
   ! create a table
   tbl = lua_table(lua,'flook')
-  ! define pointer
+  ! define pointer in table `flook`
+  ! Since a pointer does not have *bounds* per-see, we will
+  ! store it.
+  ! So
+  !    flook.type == 'r4'
+  !    flook.size == size(array) ! in correct dimensions
   call lua_set_ptr(tbl, array)
   ! get pointer
   call lua_get_ptr(tbl, array_p)
@@ -44,7 +49,7 @@ program main
   call lua_get(tbl, 'type', dtype)
 
   ! Check we have the same data!
-  if ( dtype /= 'float' ) then
+  if ( dtype /= 'r4' ) then
     fail = .true.
   end if
   if ( size(array) /= size(array_p) ) then

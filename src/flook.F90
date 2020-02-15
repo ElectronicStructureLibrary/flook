@@ -533,9 +533,11 @@ module flook
   public :: lua_set
   interface lua_set
      module procedure set_s_
-     module procedure set_b_0d_, set_b_1d_, set_b_2d_, set_i_0d_, set_i_1d_, set_i_2d_
+     module procedure set_b_0d_, set_b_1d_, set_b_2d_
+     module procedure set_i_0d_, set_i_1d_, set_i_2d_, set_l_0d_, set_l_1d_, set_l_2d_
      module procedure set_s_0d_, set_s_1d_, set_s_2d_, set_d_0d_, set_d_1d_, set_d_2d_
-     module procedure open_set_b_1d_, open_set_b_2d_, open_set_i_1d_, open_set_i_2d_
+     module procedure open_set_b_1d_, open_set_b_2d_
+     module procedure open_set_i_1d_, open_set_i_2d_, open_set_l_1d_, open_set_l_2d_
      module procedure open_set_s_1d_, open_set_s_2d_, open_set_d_1d_, open_set_d_2d_
   end interface lua_set
 
@@ -573,13 +575,16 @@ module flook
   !!     The current data types are:
   !!
   !!     - `logical`
-  !!     - `integer`
+  !!     - `integer(i4b)`
+  !!     - `integer(i8b)`
   !!     - `real(kind(0.))`
   !!     - `real(kind(0.d0))`
   public :: lua_set_ptr
   interface lua_set_ptr
+    module procedure set_ptr_char_1d_, open_set_ptr_char_1d_
     module procedure set_ptr_b_1d_, set_ptr_b_2d_, open_set_ptr_b_1d_, open_set_ptr_b_2d_
     module procedure set_ptr_i_1d_, set_ptr_i_2d_, open_set_ptr_i_1d_, open_set_ptr_i_2d_
+    module procedure set_ptr_l_1d_, set_ptr_l_2d_, open_set_ptr_l_1d_, open_set_ptr_l_2d_
     module procedure set_ptr_s_1d_, set_ptr_s_2d_, open_set_ptr_s_1d_, open_set_ptr_s_2d_
     module procedure set_ptr_d_1d_, set_ptr_d_2d_, open_set_ptr_d_1d_, open_set_ptr_d_2d_
   end interface lua_set_ptr
@@ -611,15 +616,18 @@ module flook
   !!
   !!     - `character`, (no arrays of this data is allowed)
   !!     - `logical`
-  !!     - `integer`
+  !!     - `integer(i4b)`
+  !!     - `integer(i8b)`
   !!     - `real(kind(0.))`
   !!     - `real(kind(0.d0))`
   public :: lua_get
   interface lua_get
      module procedure get_s_, get_s_i_
-     module procedure get_b_0d_, get_b_1d_, get_b_2d_, get_i_0d_, get_i_1d_, get_i_2d_
+     module procedure get_b_0d_, get_b_1d_, get_b_2d_
+     module procedure get_i_0d_, get_i_1d_, get_i_2d_, get_l_0d_, get_l_1d_, get_l_2d_
      module procedure get_s_0d_, get_s_1d_, get_s_2d_, get_d_0d_, get_d_1d_, get_d_2d_
-     module procedure open_get_b_1d_, open_get_b_2d_, open_get_i_1d_, open_get_i_2d_
+     module procedure open_get_b_1d_, open_get_b_2d_
+     module procedure open_get_i_1d_, open_get_i_2d_, open_get_l_1d_, open_get_l_2d_
      module procedure open_get_s_1d_, open_get_s_2d_, open_get_d_1d_, open_get_d_2d_
   end interface lua_get
 
@@ -654,13 +662,16 @@ module flook
   !!     The current data types are:
   !!
   !!     - `logical`
-  !!     - `integer`
+  !!     - `integer(i4b)`
+  !!     - `integer(i8b)`
   !!     - `real(kind(0.))`
   !!     - `real(kind(0.d0))`
   public :: lua_get_ptr
   interface lua_get_ptr
+    module procedure get_ptr_char_1d_, open_get_ptr_char_1d_
     module procedure get_ptr_b_1d_, get_ptr_b_2d_, open_get_ptr_b_1d_, open_get_ptr_b_2d_
     module procedure get_ptr_i_1d_, get_ptr_i_2d_, open_get_ptr_i_1d_, open_get_ptr_i_2d_
+    module procedure get_ptr_l_1d_, get_ptr_l_2d_, open_get_ptr_l_1d_, open_get_ptr_l_2d_
     module procedure get_ptr_s_1d_, get_ptr_s_2d_, open_get_ptr_s_1d_, open_get_ptr_s_2d_
     module procedure get_ptr_d_1d_, get_ptr_d_2d_, open_get_ptr_d_1d_, open_get_ptr_d_2d_
   end interface lua_get_ptr
@@ -1127,14 +1138,14 @@ contains
   subroutine set_i_0d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in) :: val
+    integer(i4b), intent(in) :: val
     call aot_table_set_val(val,tbl%lua%L,thandle=tbl%h, key = name)
   end subroutine set_i_0d_
 
   ! Documentation @ interface
   subroutine set_i_1d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(in) :: val(:)
+    integer(i4b), intent(in) :: val(:)
     integer :: i, b(2)
     b(1) = lbound(val,dim=1)
     b(2) = ubound(val,dim=1)
@@ -1147,7 +1158,7 @@ contains
   subroutine open_set_i_1d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in) :: val(:)
+    integer(i4b), intent(in) :: val(:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1158,7 +1169,7 @@ contains
   ! Documentation @ interface
   subroutine set_i_2d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(in) :: val(:,:)
+    integer(i4b), intent(in) :: val(:,:)
     integer :: i, j, b(2,2), h
     b(1,:) = lbound(val)
     b(2,:) = ubound(val)
@@ -1175,7 +1186,7 @@ contains
   subroutine open_set_i_2d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in) :: val(:,:)
+    integer(i4b), intent(in) :: val(:,:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1184,6 +1195,70 @@ contains
   end subroutine open_set_i_2d_
 
   !####### END INTEGER   ###############
+
+  !########   LONG   ###############
+
+  ! Documentation @ interface
+  subroutine set_l_0d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(in) :: val
+    call aot_table_set_val(val,tbl%lua%L,thandle=tbl%h, key = name)
+  end subroutine set_l_0d_
+
+  ! Documentation @ interface
+  subroutine set_l_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(in) :: val(:)
+    integer :: i, b(2)
+    b(1) = lbound(val,dim=1)
+    b(2) = ubound(val,dim=1)
+    do i = b(1) , b(2)
+       call aot_table_set_val(val(i),tbl%lua%L,thandle=tbl%h, pos = i)
+    end do
+  end subroutine set_l_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_l_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(in) :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_l_1d_
+
+  ! Documentation @ interface
+  subroutine set_l_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(in) :: val(:,:)
+    integer :: i, j, b(2,2), h
+    b(1,:) = lbound(val)
+    b(2,:) = ubound(val)
+    do j = b(1,2) , b(2,2)
+       h = tbl_create__(tbl%lua,tbl%h,j)
+       do i = b(1,1) , b(2,1)
+          call aot_table_set_val(val(i,j),tbl%lua%L,thandle=h, pos = i)
+       end do
+       call aot_table_close(tbl%lua%L,h)
+    end do
+  end subroutine set_l_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_l_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(in) :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_l_2d_
+
+  !####### END LONG   ###############
 
   !#######      REAL     ###############
 
@@ -1316,6 +1391,36 @@ contains
 
   !#######   POINTERS    ###############
 
+  !#######    CHARACTERS    ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_char_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    character, intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'type', 'c1')
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_char_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_char_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    character, intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_char_1d_
+
+  !#######  END CHARACTERS  ###############
+
+
   !#######      LOGICAL     ###############
 
   ! Documentation @ interface
@@ -1323,9 +1428,9 @@ contains
     type(luaTbl), intent(inout) :: tbl
     logical, intent(in), target :: val(:)
     type(c_ptr) :: ptr
-    integer :: i, s(1)
+    integer :: s(1)
     s(:) = size(val)
-    !call lua_set(tbl, 'type', 'logical')
+    call lua_set(tbl, 'type', 'b4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1348,10 +1453,10 @@ contains
     type(luaTbl), intent(inout) :: tbl
     logical, intent(in), target :: val(:,:)
     type(c_ptr) :: ptr
-    integer :: i, s(2)
+    integer :: s(2)
     s(:) = size(val)
     call reverse_(s)
-    !call lua_set(tbl, 'type', 'logical')
+    call lua_set(tbl, 'type', 'b4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1376,11 +1481,11 @@ contains
   ! Documentation @ interface
   subroutine set_ptr_i_1d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(in), target :: val(:)
+    integer(i4b), intent(in), target :: val(:)
     type(c_ptr) :: ptr
-    integer :: i, s(1)
+    integer :: s(1)
     s(:) = size(val)
-    call lua_set(tbl, 'type', 'int')
+    call lua_set(tbl, 'type', 'i4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1390,7 +1495,7 @@ contains
   subroutine open_set_ptr_i_1d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in), target :: val(:)
+    integer(i4b), intent(in), target :: val(:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1401,12 +1506,12 @@ contains
   ! Documentation @ interface
   subroutine set_ptr_i_2d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(in), target :: val(:,:)
+    integer(i4b), intent(in), target :: val(:,:)
     type(c_ptr) :: ptr
-    integer :: i, s(2)
+    integer :: s(2)
     s(:) = size(val)
     call reverse_(s)
-    call lua_set(tbl, 'type', 'int')
+    call lua_set(tbl, 'type', 'i4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1416,7 +1521,7 @@ contains
   subroutine open_set_ptr_i_2d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(in), target :: val(:,:)
+    integer(i4b), intent(in), target :: val(:,:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1426,6 +1531,61 @@ contains
 
   !#######  END INTEGER     ###############
 
+  !#######      LONG     ###############
+
+  ! Documentation @ interface
+  subroutine set_ptr_l_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(in), target :: val(:)
+    type(c_ptr) :: ptr
+    integer :: s(1)
+    s(:) = size(val)
+    call lua_set(tbl, 'type', 'i8')
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_l_1d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_l_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(in), target :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_l_1d_
+
+  ! Documentation @ interface
+  subroutine set_ptr_l_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(in), target :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: s(2)
+    s(:) = size(val)
+    call reverse_(s)
+    call lua_set(tbl, 'type', 'i8')
+    call lua_set(tbl, 'size', s)
+    ptr = c_loc(val)
+    call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+  end subroutine set_ptr_l_2d_
+
+  ! Documentation @ interface
+  subroutine open_set_ptr_l_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(in), target :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_set_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_set_ptr_l_2d_
+
+  !#######  END LONG     ###############
+
   !#######      REAL     ###############
 
   ! Documentation @ interface
@@ -1433,9 +1593,9 @@ contains
     type(luaTbl), intent(inout) :: tbl
     real(r4b), intent(in), target :: val(:)
     type(c_ptr) :: ptr
-    integer :: i, s(1)
+    integer :: s(1)
     s(:) = size(val)
-    call lua_set(tbl, 'type', 'float')
+    call lua_set(tbl, 'type', 'r4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1458,10 +1618,10 @@ contains
     type(luaTbl), intent(inout) :: tbl
     real(r4b), intent(in), target :: val(:,:)
     type(c_ptr) :: ptr
-    integer :: i, s(2)
+    integer :: s(2)
     s(:) = size(val)
     call reverse_(s)
-    call lua_set(tbl, 'type', 'float')
+    call lua_set(tbl, 'type', 'r4')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1488,9 +1648,9 @@ contains
     type(luaTbl), intent(inout) :: tbl
     real(r8b), intent(in), target :: val(:)
     type(c_ptr) :: ptr
-    integer :: i, s(1)
+    integer :: s(1)
     s(:) = size(val)
-    call lua_set(tbl, 'type', 'double')
+    call lua_set(tbl, 'type', 'r8')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1513,10 +1673,10 @@ contains
     type(luaTbl), intent(inout) :: tbl
     real(r8b), intent(in), target :: val(:,:)
     type(c_ptr) :: ptr
-    integer :: i, s(2)
+    integer :: s(2)
     s(:) = size(val)
     call reverse_(s)
-    call lua_set(tbl, 'type', 'double')
+    call lua_set(tbl, 'type', 'r8')
     call lua_set(tbl, 'size', s)
     ptr = c_loc(val)
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
@@ -1537,6 +1697,35 @@ contains
   !#######  END DOUBLE     ###############
 
 
+  !#######      CHARACTERS    ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_char_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    character, pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    character(len=16) :: type
+    call lua_get(tbl, 'size', s)
+    call lua_get(tbl, 'type', type)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_char_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_char_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    character, pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_char_1d_
+
+  !#######  END CHARACTERS    ###############
+
   !#######      LOGICAL       ###############
 
   ! Documentation @ interface
@@ -1545,8 +1734,9 @@ contains
     logical, pointer :: val(:)
     type(c_ptr) :: ptr
     integer :: err, s(1)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
-    !call lua_get(tbl, 'type', ...)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_b_1d_
@@ -1569,9 +1759,10 @@ contains
     logical, pointer :: val(:,:)
     type(c_ptr) :: ptr
     integer :: err, s(2)
+    character(len=16) :: type
     call lua_get(tbl, 'size', s)
     call reverse_(s)
-    !call lua_get(tbl, 'type', ...)
+    call lua_get(tbl, 'type', type)
     call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
     call c_f_pointer(ptr, val, shape=s)
   end subroutine get_ptr_b_2d_
@@ -1595,7 +1786,7 @@ contains
   ! Documentation @ interface
   subroutine get_ptr_i_1d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, pointer :: val(:)
+    integer(i4b), pointer :: val(:)
     type(c_ptr) :: ptr
     integer :: err, s(1)
     character(len=16) :: type
@@ -1609,7 +1800,7 @@ contains
   subroutine open_get_ptr_i_1d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, pointer :: val(:)
+    integer(i4b), pointer :: val(:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1620,7 +1811,7 @@ contains
   ! Documentation @ interface
   subroutine get_ptr_i_2d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, pointer :: val(:,:)
+    integer(i4b), pointer :: val(:,:)
     type(c_ptr) :: ptr
     integer :: err, s(2)
     character(len=16) :: type
@@ -1635,7 +1826,7 @@ contains
   subroutine open_get_ptr_i_2d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, pointer :: val(:,:)
+    integer(i4b), pointer :: val(:,:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1644,6 +1835,61 @@ contains
   end subroutine open_get_ptr_i_2d_
 
   !#######  END INTEGER       ###############
+
+  !#######      LONG       ###############
+
+  ! Documentation @ interface
+  subroutine get_ptr_l_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), pointer :: val(:)
+    type(c_ptr) :: ptr
+    integer :: err, s(1)
+    character(len=16) :: type
+    call lua_get(tbl, 'size', s)
+    call lua_get(tbl, 'type', type)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_l_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_l_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), pointer :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_l_1d_
+
+  ! Documentation @ interface
+  subroutine get_ptr_l_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), pointer :: val(:,:)
+    type(c_ptr) :: ptr
+    integer :: err, s(2)
+    character(len=16) :: type
+    call lua_get(tbl, 'size', s)
+    call reverse_(s)
+    call lua_get(tbl, 'type', type)
+    call aot_table_get_val(ptr,err,tbl%lua%L,thandle=tbl%h, key = 'ptr')
+    call c_f_pointer(ptr, val, shape=s)
+  end subroutine get_ptr_l_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_ptr_l_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), pointer :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get_ptr(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_ptr_l_2d_
+
+  !#######  END LONG       ###############
 
   !#######      REAL       ###############
 
@@ -1847,7 +2093,7 @@ contains
   subroutine get_i_0d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(inout) :: val
+    integer(i4b), intent(inout) :: val
     integer :: err
     call aot_table_get_val(val,err,tbl%lua%L,thandle=tbl%h, key = name)
   end subroutine get_i_0d_
@@ -1855,7 +2101,7 @@ contains
   ! Documentation @ interface
   subroutine get_i_1d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(inout) :: val(:)
+    integer(i4b), intent(inout) :: val(:)
     integer :: err, i, b(2)
     b(1) = lbound(val,dim=1)
     b(2) = ubound(val,dim=1)
@@ -1868,7 +2114,7 @@ contains
   subroutine open_get_i_1d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(inout) :: val(:)
+    integer(i4b), intent(inout) :: val(:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1879,7 +2125,7 @@ contains
   ! Documentation @ interface
   subroutine get_i_2d_(tbl,val)
     type(luaTbl), intent(inout) :: tbl
-    integer, intent(inout) :: val(:,:)
+    integer(i4b), intent(inout) :: val(:,:)
     integer :: err, i, j, b(2,2), h
     b(1,:) = lbound(val)
     b(2,:) = ubound(val)
@@ -1896,7 +2142,7 @@ contains
   subroutine open_get_i_2d_(tbl,name,val)
     type(luaTbl), intent(inout) :: tbl
     character(len=*), intent(in) :: name
-    integer, intent(inout) :: val(:,:)
+    integer(i4b), intent(inout) :: val(:,:)
     integer :: lvls
     lvls = 0
     call lua_open(tbl,name,lvls=lvls)
@@ -1905,6 +2151,73 @@ contains
   end subroutine open_get_i_2d_
 
   !####### END INTEGER   ###############
+
+
+  !########   LONG   ###############
+
+  ! Documentation @ interface
+  subroutine get_l_0d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(inout) :: val
+    integer :: err
+    call aot_table_get_val(val,err,tbl%lua%L,thandle=tbl%h, key = name)
+  end subroutine get_l_0d_
+
+  ! Documentation @ interface
+  subroutine get_l_1d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(inout) :: val(:)
+    integer :: err, i, b(2)
+    b(1) = lbound(val,dim=1)
+    b(2) = ubound(val,dim=1)
+    do i = b(1) , b(2)
+       call aot_table_get_val(val(i),err,tbl%lua%L,thandle=tbl%h, pos = i)
+    end do
+  end subroutine get_l_1d_
+
+  ! Documentation @ interface
+  subroutine open_get_l_1d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(inout) :: val(:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_l_1d_
+
+  ! Documentation @ interface
+  subroutine get_l_2d_(tbl,val)
+    type(luaTbl), intent(inout) :: tbl
+    integer(i8b), intent(inout) :: val(:,:)
+    integer :: err, i, j, b(2,2), h
+    b(1,:) = lbound(val)
+    b(2,:) = ubound(val)
+    do j = b(1,2) , b(2,2)
+       h = tbl_create__(tbl%lua,tbl%h, j)
+       do i = b(1,1) , b(2,1)
+          call aot_table_get_val(val(i,j),err,tbl%lua%L,thandle=h, pos = i)
+       end do
+       call aot_table_close(tbl%lua%L,h)
+    end do
+  end subroutine get_l_2d_
+
+  ! Documentation @ interface
+  subroutine open_get_l_2d_(tbl,name,val)
+    type(luaTbl), intent(inout) :: tbl
+    character(len=*), intent(in) :: name
+    integer(i8b), intent(inout) :: val(:,:)
+    integer :: lvls
+    lvls = 0
+    call lua_open(tbl,name,lvls=lvls)
+    call lua_get(tbl,val)
+    call lua_close(tbl,lvls=lvls)
+  end subroutine open_get_l_2d_
+
+  !####### END LONG   ###############
+
 
   !#######      REAL     ###############
 
