@@ -366,6 +366,15 @@ module flook
   end type luaTbl
 
 
+  !> Initialization of a new @lua table
+  !! This will attach a Lua state to the table
+  !!
+  !! \param[inout] luaTbl table handle
+  !! \param[in] @luaState C-state of Lua
+  interface lua_init
+     module procedure tbl_init_
+  end interface lua_init
+
   !> Opens a table in the current table tree.
   !!
   !! If this object already has an open table
@@ -791,6 +800,16 @@ contains
   ! Here we have functions related to the table object
 
   !> @cond SHOW_PRIVATE
+
+  !> @isee luaTbl::init
+  subroutine tbl_init_(tbl,state)
+    type(luaTbl), intent(inout) :: tbl
+    type(luaState), intent(in), target :: state
+
+    call lua_close(tbl)
+    tbl%lua => state
+
+  end subroutine tbl_init_
 
   !> @isee luaTbl::open
   recursive subroutine tbl_open_(tbl,name,lvls)

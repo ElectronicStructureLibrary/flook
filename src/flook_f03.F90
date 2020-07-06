@@ -396,6 +396,20 @@ module flook
 
    contains
 
+     ! Initializes a new table
+     !> @cond SHOW_PRIVATE
+     procedure, pass :: tbl_init_
+     !> @endcond
+
+     !> Initializes a table attaching it to a Lua state
+     !!
+     !! This is mainly for initializing a table without the
+     !! need for opening a table.
+     !!
+     !! \param[inout] luaTbl the table
+     !! \param[in] @luaState C-state of Lua
+     generic, public :: init => tbl_init_
+
      ! Create a new table and push it on this object
      !> @cond SHOW_PRIVATE
      procedure, pass :: tbl_open_
@@ -848,6 +862,16 @@ contains
   ! Here we have functions related to the table object
 
   !> @cond SHOW_PRIVATE
+
+  !> @isee luaTbl::init
+  subroutine tbl_init_(tbl,state)
+    class(luaTbl), intent(inout) :: tbl
+    type(luaState), intent(in), target :: lua
+
+    call tbl%close()
+    tbl%lua => lua
+
+  end subroutine tbl_init_
 
   !> @isee luaTbl::open
   recursive subroutine tbl_open_(tbl,name,lvls)
