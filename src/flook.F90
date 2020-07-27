@@ -1421,7 +1421,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'c1')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_char_1d_
 
@@ -1451,7 +1451,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'b4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_b_1d_
 
@@ -1477,7 +1477,7 @@ contains
     call reverse_(s)
     call lua_set(tbl, 'type', 'b4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_b_2d_
 
@@ -1506,7 +1506,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'i4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_i_1d_
 
@@ -1532,7 +1532,7 @@ contains
     call reverse_(s)
     call lua_set(tbl, 'type', 'i4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_i_2d_
 
@@ -1561,7 +1561,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'i8')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_l_1d_
 
@@ -1587,7 +1587,7 @@ contains
     call reverse_(s)
     call lua_set(tbl, 'type', 'i8')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_l_2d_
 
@@ -1616,7 +1616,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'r4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_s_1d_
 
@@ -1642,7 +1642,7 @@ contains
     call reverse_(s)
     call lua_set(tbl, 'type', 'r4')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_s_2d_
 
@@ -1671,7 +1671,7 @@ contains
     s(:) = size(val)
     call lua_set(tbl, 'type', 'r8')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_d_1d_
 
@@ -1697,7 +1697,7 @@ contains
     call reverse_(s)
     call lua_set(tbl, 'type', 'r8')
     call lua_set(tbl, 'size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_d_2d_
 

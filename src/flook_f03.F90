@@ -1419,7 +1419,7 @@ contains
     s(:) = size(val)
     !call tbl%set('type', 'logical')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_b_1d_
 
@@ -1445,7 +1445,7 @@ contains
     call reverse_(s)
     !call tbl%set('type', 'logical')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_b_2d_
 
@@ -1474,7 +1474,7 @@ contains
     s(:) = size(val)
     call tbl%set('type', 'int')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_i_1d_
 
@@ -1500,7 +1500,7 @@ contains
     call reverse_(s)
     call tbl%set('type', 'int')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_i_2d_
 
@@ -1529,7 +1529,7 @@ contains
     s(:) = size(val)
     call tbl%set('type', 'float')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_s_1d_
 
@@ -1555,7 +1555,7 @@ contains
     call reverse_(s)
     call tbl%set('type', 'float')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_s_2d_
 
@@ -1584,7 +1584,7 @@ contains
     s(:) = size(val)
     call tbl%set('type', 'double')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_d_1d_
 
@@ -1610,7 +1610,7 @@ contains
     call reverse_(s)
     call tbl%set('type', 'double')
     call tbl%set('size', s)
-    ptr = c_loc(val)
+    ptr = c_loc(val(1,1))
     call aot_table_set_val(ptr,tbl%lua%L,thandle=tbl%h, key = 'ptr')
   end subroutine set_ptr_d_2d_
 
