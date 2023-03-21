@@ -9,6 +9,5 @@ Description: Fortran-Lua hook library to control flow from scripting language.
 Version: @PROJECT_VERSION@
 URL: https://github.com/ElectronicStructureLibrary/flook
 Cflags: -I${includedir}
-Libs.private: -ldl
-Libs: -L${libdir} -lflookall
+Libs: -L${libdir} -lflookall -ldl
 
